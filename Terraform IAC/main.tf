@@ -18,7 +18,6 @@ resource "azurerm_resource_group" "Toll_Violation_Detection_System" {
   location = "Central US"
 }
 
-
 # Database Cosmos DB Account
 resource "azurerm_cosmosdb_account" "Toll_database" {
   name                = "cosmos-db-table-alok-raturi"
@@ -88,4 +87,21 @@ resource "azurerm_cosmosdb_sql_container" "Transaction_Table" {
   partition_key_paths   = ["/TransactionId"]
 }
 
+# Communication Service
+resource "azurerm_communication_service" "communication_service_for_email" {
+  name                = "Toll-Communication-Service-For-Email"
+  resource_group_name = azurerm_resource_group.Toll_Violation_Detection_System.name
+  data_location       = "United States"
+}
 
+resource "azurerm_email_communication_service" "Toll_Communication_Service" {
+  name                = "Toll-Communication-Service"
+  resource_group_name = azurerm_resource_group.Toll_Violation_Detection_System.name
+  data_location       = "United States"
+}
+
+resource "azurerm_email_communication_service_domain" "Email_Communication_Service_Domain" {
+  name             = "AzureManagedDomain"
+  email_service_id = azurerm_email_communication_service.Toll_Communication_Service.id
+  domain_management = "AzureManaged"
+}
