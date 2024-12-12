@@ -15,7 +15,7 @@ provider "azurerm" {
 # Resource Group
 resource "azurerm_resource_group" "Toll_Violation_Detection_System" {
   name     = "Toll-Violation-Detection-System"
-  location = "Central US"
+  location = "East US"
 }
 
 # Database Cosmos DB Account
@@ -29,9 +29,9 @@ resource "azurerm_cosmosdb_account" "Toll_database" {
     name = "EnableServerless"
   }
 
-    consistency_policy {
-        consistency_level = "Session"
-    }
+  consistency_policy {
+      consistency_level = "Session"
+  }
 
   geo_location {
     location          = "Central India"
@@ -61,6 +61,9 @@ resource "azurerm_cosmosdb_sql_container" "User_Table" {
   account_name          = azurerm_cosmosdb_account.Toll_database.name
   database_name         = azurerm_cosmosdb_sql_database.Toll_Violation_Database_System.name
   partition_key_paths   = ["/UserId"]
+  unique_key {
+    paths = ["/Email"]
+  }
 }
 
 resource "azurerm_cosmosdb_sql_container" "Vehicle_Table" {
@@ -69,6 +72,9 @@ resource "azurerm_cosmosdb_sql_container" "Vehicle_Table" {
   account_name          = azurerm_cosmosdb_account.Toll_database.name
   database_name         = azurerm_cosmosdb_sql_database.Toll_Violation_Database_System.name
   partition_key_paths   = ["/VehicleId"]
+  unique_key {
+    paths = ["/VehicleId"]
+  }
 }
 
 resource "azurerm_cosmosdb_sql_container" "Fastag_Table" {
@@ -77,6 +83,9 @@ resource "azurerm_cosmosdb_sql_container" "Fastag_Table" {
   account_name          = azurerm_cosmosdb_account.Toll_database.name
   database_name         = azurerm_cosmosdb_sql_database.Toll_Violation_Database_System.name
   partition_key_paths   = ["/TagId"]
+  unique_key {
+    paths = ["/VehicleId"]
+  }
 }
 
 resource "azurerm_cosmosdb_sql_container" "Transaction_Table" {
@@ -104,4 +113,39 @@ resource "azurerm_email_communication_service_domain" "Email_Communication_Servi
   name             = "AzureManagedDomain"
   email_service_id = azurerm_email_communication_service.Toll_Communication_Service.id
   domain_management = "AzureManaged"
+}
+
+
+# Function App and Azure functions + a storage account for logs
+resource "azurerm_storage_account" "Backend_Controllers_logs_Storage" {
+  name                     = "controllerslogstorage12"
+  resource_group_name      = azurerm_resource_group.Toll_Violation_Detection_System.name
+  location                 = azurerm_resource_group.Toll_Violation_Detection_System.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+}
+
+resource "azurerm_service_plan" "Backend_Controllers_Service_Plan" {
+  name                = "Function-App-Service-Plan"
+  resource_group_name = azurerm_resource_group.Toll_Violation_Detection_System.name
+  location            = azurerm_resource_group.Toll_Violation_Detection_System.location
+  os_type             = "Linux"
+  sku_name            = "Y1"
+}
+
+resource "azurerm_linux_function_app" "Backend_Controllers_Wrappers"{
+  name                = "Backend-Controllers"
+  resource_group_name = azurerm_resource_group.Toll_Violation_Detection_System.name
+  location            = azurerm_resource_group.Toll_Violation_Detection_System.location
+
+  storage_account_name       = azurerm_storage_account.Backend_Controllers_logs_Storage.name
+  storage_account_access_key = azurerm_storage_account.Backend_Controllers_logs_Storage.primary_access_key
+
+  service_plan_id            = azurerm_service_plan.Backend_Controllers_Service_Plan.id
+
+  site_config {
+    application_stack {
+      python_version = "3.12"
+    }
+  }
 }
