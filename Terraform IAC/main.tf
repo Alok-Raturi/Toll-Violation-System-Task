@@ -133,6 +133,13 @@ resource "azurerm_service_plan" "Backend_Controllers_Service_Plan" {
   sku_name            = "Y1"
 }
 
+resource "azurerm_application_insights" "Backend_Controllers_Monitoring" {
+  name                = "backend-controllers-monitoring"
+  location            = azurerm_resource_group.Toll_Violation_Detection_System.location
+  resource_group_name = azurerm_resource_group.Toll_Violation_Detection_System.name
+  application_type    = "web"
+}
+
 resource "azurerm_linux_function_app" "Backend_Controllers_Wrappers"{
   name                = "Backend-Controllers"
   resource_group_name = azurerm_resource_group.Toll_Violation_Detection_System.name
@@ -147,5 +154,7 @@ resource "azurerm_linux_function_app" "Backend_Controllers_Wrappers"{
     application_stack {
       python_version = "3.12"
     }
+    application_insights_connection_string = "${azurerm_application_insights.Backend_Controllers_Monitoring.connection_string}"
+    application_insights_key = "${azurerm_application_insights.Backend_Controllers_Monitoring.instrumentation_key}"
   }
 }
