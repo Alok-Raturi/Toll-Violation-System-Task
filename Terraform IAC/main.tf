@@ -20,10 +20,11 @@ resource "azurerm_resource_group" "Toll_Violation_Detection_System" {
 
 # Database Cosmos DB Account
 resource "azurerm_cosmosdb_account" "Toll_database" {
-  name                = "cosmos-db-table-alok-raturi"
+  name                = "tollviolationdetectionsystemdbaccount"
   location            = azurerm_resource_group.Toll_Violation_Detection_System.location
   resource_group_name = azurerm_resource_group.Toll_Violation_Detection_System.name
   offer_type          = "Standard"
+  kind = "GlobalDocumentDB"
 
   capabilities {
     name = "EnableServerless"
@@ -41,7 +42,7 @@ resource "azurerm_cosmosdb_account" "Toll_database" {
 
 # Database
 resource "azurerm_cosmosdb_sql_database" "Toll_Violation_Database_System" {
-  name                = "Toll-Violation-Database-System"
+  name                = "Toll-Violation-Detection-System-DB"
   resource_group_name = azurerm_cosmosdb_account.Toll_database.resource_group_name
   account_name        = azurerm_cosmosdb_account.Toll_database.name
 }
@@ -52,7 +53,7 @@ resource "azurerm_cosmosdb_sql_container" "Challan_Table" {
   resource_group_name   = azurerm_cosmosdb_account.Toll_database.resource_group_name
   account_name          = azurerm_cosmosdb_account.Toll_database.name
   database_name         = azurerm_cosmosdb_sql_database.Toll_Violation_Database_System.name
-  partition_key_paths   = ["/ChallanId"]
+  partition_key_paths   = ["/vehicleId"]
 }
 
 resource "azurerm_cosmosdb_sql_container" "User_Table" {
@@ -60,10 +61,8 @@ resource "azurerm_cosmosdb_sql_container" "User_Table" {
   resource_group_name   = azurerm_cosmosdb_account.Toll_database.resource_group_name
   account_name          = azurerm_cosmosdb_account.Toll_database.name
   database_name         = azurerm_cosmosdb_sql_database.Toll_Violation_Database_System.name
-  partition_key_paths   = ["/UserId"]
-  unique_key {
-    paths = ["/Email"]
-  }
+  partition_key_paths   = ["/email"]
+
 }
 
 resource "azurerm_cosmosdb_sql_container" "Vehicle_Table" {
@@ -71,10 +70,7 @@ resource "azurerm_cosmosdb_sql_container" "Vehicle_Table" {
   resource_group_name   = azurerm_cosmosdb_account.Toll_database.resource_group_name
   account_name          = azurerm_cosmosdb_account.Toll_database.name
   database_name         = azurerm_cosmosdb_sql_database.Toll_Violation_Database_System.name
-  partition_key_paths   = ["/VehicleId"]
-  unique_key {
-    paths = ["/VehicleId"]
-  }
+  partition_key_paths   = ["/email"]
 }
 
 resource "azurerm_cosmosdb_sql_container" "Fastag_Table" {
@@ -82,10 +78,7 @@ resource "azurerm_cosmosdb_sql_container" "Fastag_Table" {
   resource_group_name   = azurerm_cosmosdb_account.Toll_database.resource_group_name
   account_name          = azurerm_cosmosdb_account.Toll_database.name
   database_name         = azurerm_cosmosdb_sql_database.Toll_Violation_Database_System.name
-  partition_key_paths   = ["/TagId"]
-  unique_key {
-    paths = ["/VehicleId"]
-  }
+  partition_key_paths   = ["/vehicleId"]
 }
 
 resource "azurerm_cosmosdb_sql_container" "Transaction_Table" {
@@ -93,8 +86,9 @@ resource "azurerm_cosmosdb_sql_container" "Transaction_Table" {
   resource_group_name   = azurerm_cosmosdb_account.Toll_database.resource_group_name
   account_name          = azurerm_cosmosdb_account.Toll_database.name
   database_name         = azurerm_cosmosdb_sql_database.Toll_Violation_Database_System.name
-  partition_key_paths   = ["/TransactionId"]
+  partition_key_paths   = ["/tagId"]
 }
+
 
 # Communication Service
 resource "azurerm_communication_service" "communication_service_for_email" {
@@ -151,6 +145,10 @@ resource "azurerm_linux_function_app" "Backend_Controllers_Wrappers"{
   service_plan_id            = azurerm_service_plan.Backend_Controllers_Service_Plan.id
 
   site_config {
+    cors {
+      allowed_origins = [ "*" ]
+      support_credentials = false
+    }
     application_stack {
       python_version = "3.12"
     }
