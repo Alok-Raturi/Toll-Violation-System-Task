@@ -9,6 +9,14 @@ USER_CONTAINER = "User-Table"
 user_trigger = func.Blueprint()
 
 
+# get all vehicles
+# get all fastag
+# get all challans
+# pay all the challans
+# recharge fastag
+# view transaction history
+
+
 @user_trigger.route(route="user/login", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
 def user_triggers(req: func.HttpRequest) -> func.HttpResponse:
     print("User Login Trigger")
