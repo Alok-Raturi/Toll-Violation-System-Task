@@ -1,8 +1,8 @@
 import azure.functions as func
 import json
-from utils.db_connection import client, encode_token,decode_token
+from utils.db_connection import client
+from utils.jwt_decode import encode_token, decode_token
 from jose import JWTError
-import logging
 from azure.cosmos import  exceptions
 import uuid
 import datetime
@@ -38,7 +38,7 @@ def police_login(req: func.HttpRequest) -> func.HttpResponse:
         email = body['email']
         password = body['password']
 
-        query = "SELECT * FROM c WHERE c.email = '{0}' and c.password = '{1}'".format(email,password)
+        query = "SELECT * FROM c WHERE c.email = '{0}' and c.password = '{1}' and c.designation='police'".format(email,password)
         items = list(user_container.query_items(
             query=query,
             enable_cross_partition_query=True
@@ -143,7 +143,7 @@ def create_challan_by_vehicleId(req: func.HttpRequest) -> func.HttpResponse:
 
         challanId = uuid.uuid4()
         vehicleId = body['vehicleId']
-        amount = body['amount']
+        amount = int(body['amount'])
         location = body['location']
         description = body['description']
         date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

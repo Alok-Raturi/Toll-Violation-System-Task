@@ -2,3 +2,5 @@
 /Terraform IAC/.terraform
 /Terraform IAC/.terraform.lock.hcl
 /**/__pycache_ 
+/Azure Functions/private_key.pem
+/Azure Functions/public_key.pem
