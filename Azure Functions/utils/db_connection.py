@@ -23,6 +23,6 @@ def encode_token(data:dict):
     
 def decode_token(token:str):
     try:
-        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
     except JWTError:
         raise JWTError("Error decoding token")

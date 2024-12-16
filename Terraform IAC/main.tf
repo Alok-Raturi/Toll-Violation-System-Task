@@ -54,6 +54,9 @@ resource "azurerm_cosmosdb_sql_container" "Challan_Table" {
   account_name          = azurerm_cosmosdb_account.Toll_database.name
   database_name         = azurerm_cosmosdb_sql_database.Toll_Violation_Database_System.name
   partition_key_paths   = ["/vehicleId"]
+  unique_key {
+    paths = [ "/id" ]
+  }
 }
 
 resource "azurerm_cosmosdb_sql_container" "User_Table" {
