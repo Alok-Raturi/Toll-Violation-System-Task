@@ -4,3 +4,5 @@
 /**/__pycache_ 
 /Azure Functions/private_key.pem
 /Azure Functions/public_key.pem
+
+/CLI Interfaces/Police CLI Interface/.venv

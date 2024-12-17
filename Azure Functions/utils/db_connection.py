@@ -5,9 +5,3 @@ COSMOS_DB_ENDPOINT = "https://tollviolationdetectionsystemdbaccount.documents.az
 COSMOS_DB_KEY = ""  
 
 client = CosmosClient(COSMOS_DB_ENDPOINT, COSMOS_DB_KEY)
-
-
-
-
-
-

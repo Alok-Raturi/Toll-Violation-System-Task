@@ -1,6 +1,6 @@
 from azure.communication.email import EmailClient
 
-def send(email,subject,body):
+def send_email(email,subject,body):
     try:
         connection_string = "endpoint=https://toll-communication-service-for-email.unitedstates.communication.azure.com/;accesskey=5oK6ySgredGIxn7SdxIHKBfeg4gNzrj23iAq3Ntc0P7oMf1BDlkyJQQJ99ALACULyCptxpY3AAAAAZCSeJxb"
         client = EmailClient.from_connection_string(connection_string)
@@ -8,15 +8,16 @@ def send(email,subject,body):
         message = {
             "senderAddress": "DoNotReply@da4951cc-4acd-446c-b9a6-faf9d6e53785.azurecomm.net",
             "recipients": {
-                "to": [{"address": "<to_email>"}]
+                "to": [{"address": f"{email}"}]
             },
             "content": {
-                "subject": "Test Email",
-                "plainText": "Hello world via email.",
-                "html": """
+                "subject": f"{subject}",
+                "plainText": f"{body}",
+                "html": f"""
 				<html>
 					<body>
-						<h1>Hello world via email.</h1>
+						<h1>Important Message </h1>
+                        <p>{body}</p>
 					</body>
 				</html>"""
             },
@@ -29,5 +30,4 @@ def send(email,subject,body):
 
     except Exception as ex:
         print(ex)
-
 

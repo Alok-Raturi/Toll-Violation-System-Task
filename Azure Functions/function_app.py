@@ -3,6 +3,7 @@ import rto_trigger
 import user_trigger
 import police_trigger
 
+
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 app.register_functions(rto_trigger.rto_triggers)

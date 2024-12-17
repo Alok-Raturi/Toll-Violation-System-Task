@@ -4,3 +4,4 @@ azure-cosmos
 email_validator
 python-jose
 azure-communication-email
+bcrypt

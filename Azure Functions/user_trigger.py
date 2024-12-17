@@ -7,6 +7,7 @@ from azure.cosmos import  exceptions
 import logging
 import uuid
 import datetime
+import utils.send_email as email_service
 
 DATABASE_NAME = "Toll-Violation-Detection-System-DB"
 USER_CONTAINER = "User-Table"
@@ -85,7 +86,9 @@ def login_user(req: func.HttpRequest)->func.HttpResponse:
 def get_vehicles(req: func.HttpRequest)->func.HttpResponse:
     try:
         token = req.headers['Authorization']
-        token = token.split(" ")[1]
+        if(token.startswith('Bearer')):
+            token = token.split(" ")[1]
+        
         if not user_middleware(token):
             return func.HttpResponse(
                 "Unauthorized",
@@ -115,7 +118,7 @@ def get_vehicles(req: func.HttpRequest)->func.HttpResponse:
             "Invalid token",
             status_code=404
         )
-    except  exceptions as e:
+    except  exceptions.CosmosHttpResponseError as e:
         return func.HttpResponse(
             "Internal Server Error",
             status_code=500
@@ -131,7 +134,8 @@ def get_vehicle_challans(req: func.HttpRequest)-> func.HttpResponse:
     try:
         logging.warn("Start")
         token = req.headers['Authorization']
-        token = token.split(" ")[1]
+        if(token.startswith('Bearer')):
+            token = token.split(" ")[1]
 
         decoded_token = user_middleware(token)
         if not decoded_token:
@@ -172,7 +176,7 @@ def get_vehicle_challans(req: func.HttpRequest)-> func.HttpResponse:
             )
         
         return func.HttpResponse(
-            str(items),
+            json.dumps(items),
             status_code=200
         )
     except KeyError:
@@ -195,7 +199,9 @@ def get_vehicle_challans(req: func.HttpRequest)-> func.HttpResponse:
 def get_fastags(req:func.HttpRequest)-> func.HttpResponse:
     try:
         token = req.headers['Authorization']
-        token = token.split(" ")[1]
+        if(token.startswith('Bearer')):
+            token = token.split(" ")[1]
+
         decoded_token = user_middleware(token)
         if not decoded_token:
             return func.HttpResponse(
@@ -217,7 +223,7 @@ def get_fastags(req:func.HttpRequest)-> func.HttpResponse:
                 status_code=200
             )
         return func.HttpResponse(
-            str(items),
+            json.dumps(items),
             status_code=200
         )
     except KeyError:
@@ -240,9 +246,11 @@ def get_fastags(req:func.HttpRequest)-> func.HttpResponse:
 def recharge_fastags(req: func.HttpRequest)-> func.HttpResponse:
     try:
         token = req.headers['Authorization']
-        token = token.split(" ")[1]
-        decoded_token = user_middleware(token)
+        if(token.startswith('Bearer')):
+            token = token.split(" ")[1]
 
+        decoded_token = user_middleware(token)
+        logging.warning("Heeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeey")
         if not decoded_token:
             return func.HttpResponse(
                 "Unauthorized",
@@ -254,15 +262,19 @@ def recharge_fastags(req: func.HttpRequest)-> func.HttpResponse:
         fastag_container = database.get_container_client(FASTAG_CONTAINER)
         transaction_container = database.get_container_client(TRANSACTION_CONTAINER)
 
-        amount = int(body['amount'])
-        tagid = req.route_params.get('tagid')   
+        logging.warning("Heeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeey - 2")
 
+        amount = int(body['amount'])
+        # logging.warn(amount)
+        tagid = req.route_params.get('tagid')   
+        # logging.warning(tagid)
         if(amount<0):
             return func.HttpResponse(
-                "Invalid amount",
+                json.dumps({"msg":"Invalid amount"}),
                 status_code=404
             )
         
+
         query = "SELECT * FROM c WHERE c.id = '{0}'".format(tagid)
         items = list(fastag_container.query_items(
             query=query,
@@ -271,13 +283,13 @@ def recharge_fastags(req: func.HttpRequest)-> func.HttpResponse:
         
         if len(items) == 0:
             return func.HttpResponse(
-                "Invalid Fastag",
+                json.dumps("Invalid Fastag"),
                 status_code=200
             )
         
         if items[0]['email'] != decoded_token['email']:
             return func.HttpResponse(
-                "You are not authorized to recharge this fastag",
+                json.dumps("You are not authorized to recharge this fastag"),
                 status_code=401
             )
         items[0]['balance'] = str(int(items[0]['balance']) + amount)
@@ -308,17 +320,18 @@ def recharge_fastags(req: func.HttpRequest)-> func.HttpResponse:
         )
     except KeyError:
         return func.HttpResponse(
-            "Invalid token",
+            json.dumps("Invalid token"),
             status_code=404
         )
     except  exceptions.CosmosHttpResponseError as e:
         return func.HttpResponse(
-            "Internal Server Error",
+            json.dumps("Internal Server Error"),
             status_code=500
         )
     except (JWTError, Exception) as e:
+        logging.warn(e)
         return func.HttpResponse(
-            str(e),
+            json.dumps("Internal Server Error"),
             status_code=500
         )
     
@@ -326,7 +339,9 @@ def recharge_fastags(req: func.HttpRequest)-> func.HttpResponse:
 def get_transaction_history(req:func.HttpRequest)-> func.HttpResponse:
     try:
         token = req.headers['Authorization']
-        token = token.split(" ")[1]
+        if(token.startswith('Bearer')):
+            token = token.split(" ")[1]
+
         decoded_token = user_middleware(token)
 
         if not decoded_token:
@@ -389,12 +404,13 @@ def get_transaction_history(req:func.HttpRequest)-> func.HttpResponse:
             status_code=500
         )
 
-@user_trigger.route('user/pay-challan/{vehicleId}',auth_level=func.AuthLevel.ANONYMOUS, methods=['POST'])
+@user_trigger.route('user/pay-all-challan/{vehicleId}',auth_level=func.AuthLevel.ANONYMOUS, methods=['POST'])
 def pay_challan(req:func.HttpRequest)-> func.HttpResponse:
     try:
         logging.warn("Start")   
         token = req.headers['Authorization']
-        token = token.split(" ")[1]
+        if(token.startswith('Bearer')):
+            token = token.split(" ")[1]
         decoded_token = user_middleware(token)
 
         if not decoded_token:
@@ -497,6 +513,67 @@ def pay_challan(req:func.HttpRequest)-> func.HttpResponse:
             status_code=500
         )
 
+
+@user_trigger.route('user/send-alert',auth_level=func.AuthLevel.ANONYMOUS, methods=['POST'])
+def send_alert(req:func.HttpRequest)-> func.HttpResponse:
+    try:
+        logging.warn("Alert Trigger Started")
+        database = client.get_database_client(DATABASE_NAME)
+        challan_container = database.get_container_client(CHALLAN_CONTAINER)
+        vehicle_container = database.get_container_client(VEHICLE_CONTAINER)
+
+        query = 'SELECT DISTINCT c.vehicleId,c.amount FROM c WHERE c.status = "unsettled"'
+
+        query_results = list(challan_container.query_items(query=query,enable_cross_partition_query=True))
+        vehicle_to_challan = {}
+        for result in query_results:
+            try:
+                vehicle_to_challan[result['vehicleId']]+=result['amount']
+            except KeyError:
+                vehicle_to_challan[result['vehicleId']]= result['amount']
+            
+        
+        vehicleIds = tuple(vehicle_to_challan.keys())
+        logging.warn(vehicleIds)
+        query = 'SELECT c.email,c.id from c where c.id IN {0}'.format(vehicleIds)
+        logging.warn(query)
+        email_to_vehicleIds = list(vehicle_container.query_items(query=query, enable_cross_partition_query=True))
+
+        vehicle_to_email_map = {}
+        for email_to_vehicle in email_to_vehicleIds:
+            vehicle_to_email_map[email_to_vehicle['id']]= email_to_vehicle['email']
+        
+
+        subject = "Pending Challans on your vehicle with vehicle number - {0}"
+        body = """Hello Sir,\n
+                You have pending challans on your vehicle with vehicle number {0}.\n
+                Total Amount you have to pay is {1}.\n
+                Log in to our portal for detail description of your challans and to pay your challans.\n
+                If you won't pay your challans then your challans will be auto payed on your next toll visit.\n
+                If your fastag won't have enough balance,then your fastag will be blacklisted"""
+
+        for vehicle in vehicle_to_challan.keys():
+            email = vehicle_to_email_map[vehicle]
+            amount = vehicle_to_challan[vehicle]
+            vehicleId = vehicle
+
+            new_subject = subject.format(vehicleId)
+            new_body = body.format(vehicleId,amount)
+            email_service.send(email,new_subject,new_body)
+
+        return func.HttpResponse(
+            body=json.dumps("Success"),
+            status_code=200
+        )
+    
+    except exceptions.CosmosHttpResponseError as e:
+        logging.warn("Testing")
+        logging.warn(e)
+        return func.HttpResponse(
+            body=json.dumps({
+                'Message':"Sending alert"
+            })
+        )
 # Pay all challan - Done
 # Fastag Information - Done
 # Recharge Fastag - Done
@@ -507,3 +584,4 @@ def pay_challan(req:func.HttpRequest)-> func.HttpResponse:
 # Police - CLI based project
 # version.tf and variables.tf
 # Change your password
+
