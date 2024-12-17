@@ -1,0 +1,66 @@
+/* Styles for the challan container */
+.challan-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Responsive columns */
+    gap: 35px;
+    padding: 20px;
+    background-color: #f5f5f5;
+    grid-auto-flow: row;
+    justify-content: center; /* Centers the entire grid content */
+  }
+  
+  /* Styles for individual challan details */
+  .challan-details {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 15px 20px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-size: 16px;
+  }
+  
+  /* Hover effect for challan details */
+  .challan-details:hover {
+    transform: scale(1.05);
+    transition: all 0.3s ease;
+    border-color: #007bff;
+    cursor: pointer;
+  }
+  
+  /* Additional styling for p tags in challan-details */
+  .challan-details p {
+    margin: 10px 0;
+    color: #333;
+  }
+  
+  /* Highlighted styling for Challan ID */
+  .challan-details p:first-child {
+    font-weight: bold;
+    color: #007bff;
+  }
+  
+  /* Styles for the button */
+  button[type="button"] {
+    display: block;
+    margin: 30px auto 0; /* Centers the button below the grid */
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  /* Hover and active states for the button */
+  button[type="button"]:hover {
+    background-color: #0056b3;
+  }
+  
+  button[type="button"]:active {
+    background-color: #003f7f;
+    transform: scale(0.98); /* Slight shrink on click */
+  }
+  

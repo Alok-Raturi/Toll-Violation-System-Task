@@ -1,0 +1,50 @@
+<div class="fast-tag-details">
+  @for (tag of fastTrackReturn; track $index) {
+  <div class="detail-container" (click)="onHistory(tag['id'])">
+    <p>Tag ID: {{ tag["id"] }}</p>
+    <p>Vehicle ID: {{ tag["vehicleId"] }}</p>
+    <p>Remaining Balance: {{ tag["balance"] }}</p>
+    <p>Status: {{ tag["status"] }}</p>
+  </div>
+  }
+</div>
+<form [formGroup]="rechargeForm" (submit)="onRecharge()">
+  <select title="tags" formControlName="tag">
+    @for (tag of fastTrackReturn; track $index) {
+    <option (value)="(tag['id'])">{{ tag["id"] }}</option>
+    }
+  </select>
+  <input
+    type="number"
+    formControlName="amount"
+    class="amount-input"
+    placeholder="Enter Amount"
+  />
+  <button type="submit">Recharge</button>
+</form>
+@if (transHist) { 
+  <div class="transaction-details">
+  <table class="transaction-table">
+    <thead>
+      <tr>
+        <th>Amount</th>
+        <th>Id</th>
+        <th>Tag ID</th>
+        <th>Timestamp</th>
+        <th>Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (transaction of transactionHistory; track $index) {
+      <tr class="{{ transaction['type'] }}">
+        <td>{{ transaction["amount"] }}</td>
+        <td>{{ transaction["id"] }}</td>
+        <td>{{ transaction["tagId"] }}</td>
+        <td>{{ transaction["timestamp"] }}</td>
+        <td class="transaction-type">{{ transaction["type"] }}</td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
+}
