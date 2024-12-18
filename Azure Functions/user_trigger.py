@@ -405,7 +405,7 @@ def get_transaction_history(req:func.HttpRequest)-> func.HttpResponse:
         )
 
 @user_trigger.route('user/pay-all-challan/{vehicleId}',auth_level=func.AuthLevel.ANONYMOUS, methods=['POST'])
-def pay_challan(req:func.HttpRequest)-> func.HttpResponse:
+def pay_all_challan(req:func.HttpRequest)-> func.HttpResponse:
     try:
         logging.warn("Start")   
         token = req.headers['Authorization']
@@ -513,6 +513,12 @@ def pay_challan(req:func.HttpRequest)-> func.HttpResponse:
             status_code=500
         )
 
+@user_trigger.route('user/pay-challan/{challanId}')
+def pay_challan(req:func.HttpRequest)-> func.HttpResponse:
+    try:
+        pass
+    except:
+        pass
 
 @user_trigger.route('user/send-alert',auth_level=func.AuthLevel.ANONYMOUS, methods=['POST'])
 def send_alert(req:func.HttpRequest)-> func.HttpResponse:

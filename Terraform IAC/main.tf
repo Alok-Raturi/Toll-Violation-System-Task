@@ -1,30 +1,71 @@
-terraform {
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "=4.1.0"
+provider "azurerm" {
+  features {
+    resource_group {
+      prevent_deletion_if_contains_resources = false
     }
   }
-}
-
-provider "azurerm" {
-  features {}
-  subscription_id = "8a228cff-023f-42af-818d-51a84a828d46"
+  subscription_id = var.subscription_id
 }
 
 # Resource Group
-resource "azurerm_resource_group" "Toll_Violation_Detection_System" {
-  name     = "Toll-Violation-Detection-System"
-  location = "East US"
+resource "azurerm_resource_group" "toll_violation_detection_system_rg" {
+  name     = var.resource_group_name
+  location = var.region
+}
+
+# Function App and Azure functions + a storage account for logs
+resource "azurerm_storage_account" "function_app_storage_account" {
+  name                     = var.function_app_log_storage_name
+  resource_group_name      = azurerm_resource_group.toll_violation_detection_system_rg.name
+  location                 = azurerm_resource_group.toll_violation_detection_system_rg.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+}
+
+resource "azurerm_service_plan" "function_app_service_plan" {
+  name                = var.function_app_service_plan
+  resource_group_name = azurerm_resource_group.toll_violation_detection_system_rg.name
+  location            = azurerm_resource_group.toll_violation_detection_system_rg.location
+  os_type             = "Linux"
+  sku_name            = "Y1"
+}
+
+resource "azurerm_application_insights" "function_app_application_insights" {
+  name                = var.function_app_application_insights_name
+  location            = azurerm_resource_group.toll_violation_detection_system_rg.location
+  resource_group_name = azurerm_resource_group.toll_violation_detection_system_rg.name
+  application_type    = "web"
+}
+
+resource "azurerm_linux_function_app" "function_app_toll_violation_system"{
+  name                = var.function_app_container
+  resource_group_name = azurerm_resource_group.toll_violation_detection_system_rg.name
+  location            = azurerm_resource_group.toll_violation_detection_system_rg.location
+
+  storage_account_name       = azurerm_storage_account.function_app_storage_account.name
+  storage_account_access_key = azurerm_storage_account.function_app_storage_account.primary_access_key
+
+  service_plan_id            = azurerm_service_plan.function_app_service_plan.id
+
+  site_config {
+    cors {
+      allowed_origins = [ "*" ]
+      support_credentials = false
+    }
+    application_stack {
+      python_version = "3.12"
+    }
+    application_insights_connection_string = "${azurerm_application_insights.function_app_application_insights.connection_string}"
+    application_insights_key = "${azurerm_application_insights.function_app_application_insights.instrumentation_key}"
+  }
 }
 
 # Database Cosmos DB Account
-resource "azurerm_cosmosdb_account" "Toll_database" {
-  name                = "tollviolationdetectionsystemdbaccount"
-  location            = azurerm_resource_group.Toll_Violation_Detection_System.location
-  resource_group_name = azurerm_resource_group.Toll_Violation_Detection_System.name
+resource "azurerm_cosmosdb_account" "toll_database_account" {
+  name                = var.cosmosdb_account_name
+  location            = azurerm_resource_group.toll_violation_detection_system_rg.location
+  resource_group_name = azurerm_resource_group.toll_violation_detection_system_rg.name
   offer_type          = "Standard"
-  kind = "GlobalDocumentDB"
 
   capabilities {
     name = "EnableServerless"
@@ -41,121 +82,78 @@ resource "azurerm_cosmosdb_account" "Toll_database" {
 }
 
 # Database
-resource "azurerm_cosmosdb_sql_database" "Toll_Violation_Database_System" {
-  name                = "Toll-Violation-Detection-System-DB"
-  resource_group_name = azurerm_cosmosdb_account.Toll_database.resource_group_name
-  account_name        = azurerm_cosmosdb_account.Toll_database.name
+resource "azurerm_cosmosdb_sql_database" "toll_violation_database_system" {
+  name                = var.cosmosdb_database_name
+  resource_group_name = azurerm_cosmosdb_account.toll_database_account.resource_group_name
+  account_name        = azurerm_cosmosdb_account.toll_database_account.name
 }
 
 # Database SQL Containers
-resource "azurerm_cosmosdb_sql_container" "Challan_Table" {
-  name                  = "Challan-Table"
-  resource_group_name   = azurerm_cosmosdb_account.Toll_database.resource_group_name
-  account_name          = azurerm_cosmosdb_account.Toll_database.name
-  database_name         = azurerm_cosmosdb_sql_database.Toll_Violation_Database_System.name
+resource "azurerm_cosmosdb_sql_container" "challan_container_table" {
+  name                  = var.cosmosdb_container_name[0]
+  resource_group_name = azurerm_cosmosdb_account.toll_database_account.resource_group_name
+  account_name        = azurerm_cosmosdb_account.toll_database_account.name
+  database_name         = azurerm_cosmosdb_sql_database.toll_violation_database_system.name
   partition_key_paths   = ["/vehicleId"]
+
+}
+
+resource "azurerm_cosmosdb_sql_container" "user_container_table" {
+  name                  = var.cosmosdb_container_name[1]
+  resource_group_name = azurerm_cosmosdb_account.toll_database_account.resource_group_name
+  account_name        = azurerm_cosmosdb_account.toll_database_account.name
+  database_name         = azurerm_cosmosdb_sql_database.toll_violation_database_system.name
+  partition_key_paths   = ["/email"]
+
+}
+
+resource "azurerm_cosmosdb_sql_container" "vehicle_container_table" {
+  name                  = var.cosmosdb_container_name[2]
+  resource_group_name = azurerm_cosmosdb_account.toll_database_account.resource_group_name
+  account_name        = azurerm_cosmosdb_account.toll_database_account.name
+  database_name         = azurerm_cosmosdb_sql_database.toll_violation_database_system.name
+  partition_key_paths   = ["/email"]
   unique_key {
-    paths = [ "/id" ]
+    paths = ["/email"]
   }
 }
 
-resource "azurerm_cosmosdb_sql_container" "User_Table" {
-  name                  = "User-Table"
-  resource_group_name   = azurerm_cosmosdb_account.Toll_database.resource_group_name
-  account_name          = azurerm_cosmosdb_account.Toll_database.name
-  database_name         = azurerm_cosmosdb_sql_database.Toll_Violation_Database_System.name
-  partition_key_paths   = ["/email"]
-
-}
-
-resource "azurerm_cosmosdb_sql_container" "Vehicle_Table" {
-  name                  = "Vehicle-Table"
-  resource_group_name   = azurerm_cosmosdb_account.Toll_database.resource_group_name
-  account_name          = azurerm_cosmosdb_account.Toll_database.name
-  database_name         = azurerm_cosmosdb_sql_database.Toll_Violation_Database_System.name
-  partition_key_paths   = ["/email"]
-}
-
-resource "azurerm_cosmosdb_sql_container" "Fastag_Table" {
-  name                  = "Fastag-Table"
-  resource_group_name   = azurerm_cosmosdb_account.Toll_database.resource_group_name
-  account_name          = azurerm_cosmosdb_account.Toll_database.name
-  database_name         = azurerm_cosmosdb_sql_database.Toll_Violation_Database_System.name
+resource "azurerm_cosmosdb_sql_container" "fastag_container_table" {
+  name                  = var.cosmosdb_container_name[3]
+  resource_group_name = azurerm_cosmosdb_account.toll_database_account.resource_group_name
+  account_name        = azurerm_cosmosdb_account.toll_database_account.name
+  database_name         = azurerm_cosmosdb_sql_database.toll_violation_database_system.name
   partition_key_paths   = ["/vehicleId"]
+  unique_key {
+    paths = ["/vehicleId"]
+  }
 }
 
-resource "azurerm_cosmosdb_sql_container" "Transaction_Table" {
-  name                  = "Transaction-Table"
-  resource_group_name   = azurerm_cosmosdb_account.Toll_database.resource_group_name
-  account_name          = azurerm_cosmosdb_account.Toll_database.name
-  database_name         = azurerm_cosmosdb_sql_database.Toll_Violation_Database_System.name
+resource "azurerm_cosmosdb_sql_container" "transaction_container_table" {
+  name                  = var.cosmosdb_container_name[4]
+  resource_group_name = azurerm_cosmosdb_account.toll_database_account.resource_group_name
+  account_name        = azurerm_cosmosdb_account.toll_database_account.name
+  database_name         = azurerm_cosmosdb_sql_database.toll_violation_database_system.name
   partition_key_paths   = ["/tagId"]
 }
 
 
 # Communication Service
-resource "azurerm_communication_service" "communication_service_for_email" {
-  name                = "Toll-Communication-Service-For-Email"
-  resource_group_name = azurerm_resource_group.Toll_Violation_Detection_System.name
-  data_location       = "United States"
+resource "azurerm_communication_service" "communication_service_for_alerts" {
+  name                = var.communication_service_name
+  resource_group_name = azurerm_resource_group.toll_violation_detection_system_rg.name
+  data_location       = var.data_location_for_communication_service
 }
 
-resource "azurerm_email_communication_service" "Toll_Communication_Service" {
-  name                = "Toll-Communication-Service"
-  resource_group_name = azurerm_resource_group.Toll_Violation_Detection_System.name
-  data_location       = "United States"
+resource "azurerm_email_communication_service" "toll_email_communication_service" {
+  name                = "Toll-Email-Communication-Service"
+  resource_group_name = azurerm_resource_group.toll_violation_detection_system_rg.name
+  data_location       = var.data_location_for_communication_service
 }
 
-resource "azurerm_email_communication_service_domain" "Email_Communication_Service_Domain" {
-  name             = "AzureManagedDomain"
-  email_service_id = azurerm_email_communication_service.Toll_Communication_Service.id
+resource "azurerm_email_communication_service_domain" "toll_email_communication_service_domain" {
+  name             = var.email_communication_service_domain_name
+  email_service_id = azurerm_email_communication_service.toll_email_communication_service.id
   domain_management = "AzureManaged"
 }
 
-
-# Function App and Azure functions + a storage account for logs
-resource "azurerm_storage_account" "Backend_Controllers_logs_Storage" {
-  name                     = "controllerslogstorage12"
-  resource_group_name      = azurerm_resource_group.Toll_Violation_Detection_System.name
-  location                 = azurerm_resource_group.Toll_Violation_Detection_System.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-}
-
-resource "azurerm_service_plan" "Backend_Controllers_Service_Plan" {
-  name                = "Function-App-Service-Plan"
-  resource_group_name = azurerm_resource_group.Toll_Violation_Detection_System.name
-  location            = azurerm_resource_group.Toll_Violation_Detection_System.location
-  os_type             = "Linux"
-  sku_name            = "Y1"
-}
-
-resource "azurerm_application_insights" "Backend_Controllers_Monitoring" {
-  name                = "backend-controllers-monitoring"
-  location            = azurerm_resource_group.Toll_Violation_Detection_System.location
-  resource_group_name = azurerm_resource_group.Toll_Violation_Detection_System.name
-  application_type    = "web"
-}
-
-resource "azurerm_linux_function_app" "Backend_Controllers_Wrappers"{
-  name                = "Backend-Controllers"
-  resource_group_name = azurerm_resource_group.Toll_Violation_Detection_System.name
-  location            = azurerm_resource_group.Toll_Violation_Detection_System.location
-
-  storage_account_name       = azurerm_storage_account.Backend_Controllers_logs_Storage.name
-  storage_account_access_key = azurerm_storage_account.Backend_Controllers_logs_Storage.primary_access_key
-
-  service_plan_id            = azurerm_service_plan.Backend_Controllers_Service_Plan.id
-
-  site_config {
-    cors {
-      allowed_origins = [ "*" ]
-      support_credentials = false
-    }
-    application_stack {
-      python_version = "3.12"
-    }
-    application_insights_connection_string = "${azurerm_application_insights.Backend_Controllers_Monitoring.connection_string}"
-    application_insights_key = "${azurerm_application_insights.Backend_Controllers_Monitoring.instrumentation_key}"
-  }
-}

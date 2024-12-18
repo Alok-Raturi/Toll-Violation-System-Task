@@ -9,6 +9,7 @@ import datetime
 import time
 import logging
 from utils.send_email import send_email
+import bcrypt
 
 police_trigger = func.Blueprint()
 
@@ -52,15 +53,19 @@ def police_login(req: func.HttpRequest) -> func.HttpResponse:
         email = body['email']
         password = body['password']
 
+        bcrypt_password = str(bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()))
+        
         logging.warn(email)
         logging.warn(password)
+        logging.warn(bcrypt_password)
 
-        query = "SELECT * FROM c WHERE c.email = '{0}' and c.password = '{1}' and c.designation='police'".format(email,password)
+        query = '''SELECT * FROM c WHERE c.email = "{0}" and c.password = "{1}" and c.designation="police"'''.format(email,bcrypt_password)
+
         items = list(user_container.query_items(
             query=query,
             enable_cross_partition_query=True
         ))
-
+        print(items)
         if len(items) == 0:
             return func.HttpResponse(
                 json.dumps("Invalid Email or Password"),
@@ -141,7 +146,7 @@ def get_challan_by_vehicle_id(req: func.HttpRequest) -> func.HttpResponse:
             json.dumps(items),
             status_code=200
         )
-    except (Exception,exceptions.CosmosHttpResponseError) as e:
+    except (Exception,exceptions.CosmosHttpResponseError,JWTError) as e:
         return func.HttpResponse(
             body=str("Internal server error"),
             status_code=500
@@ -226,7 +231,7 @@ def create_challan_by_vehicleId(req: func.HttpRequest) -> func.HttpResponse:
             status_code=404
         )
 
-    except (Exception,exceptions.CosmosHttpResponseError) as e:
+    except (Exception,exceptions.CosmosHttpResponseError,JWTError) as e:
         return func.HttpResponse(
             body=json.dumps("Internal server error"),
             status_code=500

@@ -6,7 +6,7 @@ PRESS 1 FOR LOGIN
 PRESS 2 FOR EXIT
 """
 
-BASE_URL = "https://neural-usual-towards-tx.trycloudflare.com/api/"
+BASE_URL = "http://localhost:7071/api/"
 
 PROMPT_AFTER_LOGIN = """
 PRESS 1 FOR CREATING A CHALLAN
