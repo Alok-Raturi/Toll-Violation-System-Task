@@ -110,7 +110,7 @@ def get_challan_by_vehicle_id(req: func.HttpRequest) -> func.HttpResponse:
         logging.warn(token)
         if not police_middleware(token):
             return func.HttpResponse(
-                "Unauthorized",
+                json.dumps("Unauthorized"),
                 status_code=401
             )
 
@@ -163,7 +163,7 @@ def create_challan_by_vehicleId(req: func.HttpRequest) -> func.HttpResponse:
         if not police_middleware(token):
 
             return func.HttpResponse(
-                "Unauthorized",
+                json.dumps("Unauthorized"),
                 status_code=401
             )
         body = json.loads(req.get_body().decode('utf-8'))

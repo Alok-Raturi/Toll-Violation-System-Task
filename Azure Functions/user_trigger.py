@@ -7,7 +7,6 @@ from azure.cosmos import  exceptions
 import logging
 import uuid
 import datetime
-import utils.send_email as email_service
 from utils.password import check_password
 
 DATABASE_NAME = "Toll-Violation-Detection-System-DB"
@@ -47,7 +46,7 @@ def login_user(req: func.HttpRequest)->func.HttpResponse:
 
         if len(items) == 0:
             return func.HttpResponse(
-                "Invalid Email or Password",
+                json.dumps("Invalid Email or Password"),
                 status_code=404
             )
         user_password = items[0]['password']
@@ -72,13 +71,13 @@ def login_user(req: func.HttpRequest)->func.HttpResponse:
         )
     except KeyError:
         return func.HttpResponse(
-            "Invalid body",
+            json.dumps("Invalid body"),
             status_code=404
         )
     except  (exceptions.CosmosHttpResponseError,JWTError, Exception) as e:
         logging.error(e)
         return func.HttpResponse(
-            "Internal Server Error",
+            json.dumps("Internal Server Error"),
             status_code=500
         )
 
@@ -91,7 +90,7 @@ def get_vehicles(req: func.HttpRequest)->func.HttpResponse:
         
         if not user_middleware(token):
             return func.HttpResponse(
-                "Unauthorized",
+                json.dumps("Unauthorized"),
                 status_code=401
             )
         database = client.get_database_client(DATABASE_NAME)
@@ -106,7 +105,7 @@ def get_vehicles(req: func.HttpRequest)->func.HttpResponse:
         ))
         if len(items) == 0:
             return func.HttpResponse(
-                "No Vehicles found",
+                json.dumps("No Vehicles found"),
                 status_code=200
             )
         return func.HttpResponse(
@@ -115,17 +114,12 @@ def get_vehicles(req: func.HttpRequest)->func.HttpResponse:
         )
     except KeyError:
         return func.HttpResponse(
-            "Invalid token",
+            json.dumps("Invalid token"),
             status_code=404
         )
-    except  exceptions.CosmosHttpResponseError as e:
+    except  (exceptions.CosmosHttpResponseError,JWTError, Exception) as e:
         return func.HttpResponse(
-            "Internal Server Error",
-            status_code=500
-        )
-    except (JWTError, Exception) as e:
-        return func.HttpResponse(
-            str(e),
+            json.dumps("Internal Server Error"),
             status_code=500
         )
     
@@ -141,7 +135,7 @@ def get_vehicle_challans(req: func.HttpRequest)-> func.HttpResponse:
         if not decoded_token:
             logging.warn("Done")
             return func.HttpResponse(
-                "Unauthorized",
+                json.dumps("Unauthorized"),
                 status_code=401
             )
         logging.warn(decoded_token)
@@ -159,7 +153,7 @@ def get_vehicle_challans(req: func.HttpRequest)-> func.HttpResponse:
         ))
         if(email != email_item[0]['email']):
             return func.HttpResponse(
-                "You are not authorized to view this",
+                json.dumps("You are not authorized to view this"),
                 status_code=401
             )
         
@@ -171,7 +165,7 @@ def get_vehicle_challans(req: func.HttpRequest)-> func.HttpResponse:
         logging.warn(items)
         if len(items) == 0:
             return func.HttpResponse(
-                "No Challans found",
+                json.dumps("No Challans found"),
                 status_code=200
             )
         
@@ -181,20 +175,15 @@ def get_vehicle_challans(req: func.HttpRequest)-> func.HttpResponse:
         )
     except KeyError:
         return func.HttpResponse(
-            "Invalid token",
+            json.dumps("Invalid token"),
             status_code=404
         )
-    except  exceptions.CosmosHttpResponseError as e:
+    except  (exceptions.CosmosHttpResponseError,JWTError, Exception) as e:
         return func.HttpResponse(
-            "Internal Server Error",
+            json.dumps("Internal Server Error"),
             status_code=500
         )
-    except (JWTError, Exception) as e:
-        return func.HttpResponse(
-            str(e),
-            status_code=500
-        )
-    
+  
 @user_trigger.route('user/get-fastags',auth_level=func.AuthLevel.ANONYMOUS, methods=['GET'])
 def get_fastags(req:func.HttpRequest)-> func.HttpResponse:
     try:
@@ -205,7 +194,7 @@ def get_fastags(req:func.HttpRequest)-> func.HttpResponse:
         decoded_token = user_middleware(token)
         if not decoded_token:
             return func.HttpResponse(
-                "Unauthorized",
+                json.dumps("Unauthorized"),
                 status_code=401
             )
         database = client.get_database_client(DATABASE_NAME)
@@ -219,7 +208,7 @@ def get_fastags(req:func.HttpRequest)-> func.HttpResponse:
         ))
         if len(items) == 0:
             return func.HttpResponse(
-                "No Fastags found",
+                json.dumps("No Fastags found"),
                 status_code=200
             )
         return func.HttpResponse(
@@ -228,17 +217,12 @@ def get_fastags(req:func.HttpRequest)-> func.HttpResponse:
         )
     except KeyError:
         return func.HttpResponse(
-            "Invalid token",
+            json.dumps("Invalid token"),
             status_code=404
         )
-    except  exceptions.CosmosHttpResponseError as e:
+    except  (exceptions.CosmosHttpResponseError  ,JWTError, Exception) as e:
         return func.HttpResponse(
-            "Internal Server Error",
-            status_code=500
-        )
-    except (JWTError, Exception) as e:
-        return func.HttpResponse(
-            str(e),
+            json.dumps("Internal Server Error"),
             status_code=500
         )
     
@@ -250,10 +234,9 @@ def recharge_fastags(req: func.HttpRequest)-> func.HttpResponse:
             token = token.split(" ")[1]
 
         decoded_token = user_middleware(token)
-        logging.warning("Heeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeey")
         if not decoded_token:
             return func.HttpResponse(
-                "Unauthorized",
+                json.dumps("Unauthorized"),
                 status_code=401
             )
         
@@ -262,12 +245,15 @@ def recharge_fastags(req: func.HttpRequest)-> func.HttpResponse:
         fastag_container = database.get_container_client(FASTAG_CONTAINER)
         transaction_container = database.get_container_client(TRANSACTION_CONTAINER)
 
-        logging.warning("Heeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeey - 2")
-
-        amount = int(body['amount'])
-        # logging.warn(amount)
+        amount = f"{body['amount']}"
         tagid = req.route_params.get('tagid')   
-        # logging.warning(tagid)
+
+        if not amount.isnumeric():
+            return func.HttpResponse(
+                json.dumps("Invalid amount entered"),
+                status_code=404
+            ) 
+        amount =int(amount)
         if(amount<0):
             return func.HttpResponse(
                 json.dumps({"msg":"Invalid amount"}),
@@ -292,11 +278,10 @@ def recharge_fastags(req: func.HttpRequest)-> func.HttpResponse:
                 json.dumps("You are not authorized to recharge this fastag"),
                 status_code=401
             )
-        items[0]['balance'] = str(int(items[0]['balance']) + amount)
+        items[0]['balance'] = int(items[0]['balance']) + amount
 
         fastag_container.upsert_item(items[0])
 
-        transaction_id = uuid.uuid4()
         timestamp = str(datetime.datetime.now())
         tid = tagid
         amount = amount
@@ -304,13 +289,12 @@ def recharge_fastags(req: func.HttpRequest)-> func.HttpResponse:
         description = "Recharge"
 
         transaction_container.create_item({
-            "id":str(transaction_id),
             "timestamp":timestamp,
             "tagId":tid,
             "amount":amount,
             "type":type_of_transaction,
             "description":description
-        })
+        },enable_automatic_id_generation=True)
         return func.HttpResponse(
             body=json.dumps({
                 "message":"Recharge Successful",
@@ -323,13 +307,7 @@ def recharge_fastags(req: func.HttpRequest)-> func.HttpResponse:
             json.dumps("Invalid token"),
             status_code=404
         )
-    except  exceptions.CosmosHttpResponseError as e:
-        return func.HttpResponse(
-            json.dumps("Internal Server Error"),
-            status_code=500
-        )
-    except (JWTError, Exception) as e:
-        logging.warn(e)
+    except  (exceptions.CosmosHttpResponseError,JWTError, Exception) as e:
         return func.HttpResponse(
             json.dumps("Internal Server Error"),
             status_code=500
@@ -346,7 +324,7 @@ def get_transaction_history(req:func.HttpRequest)-> func.HttpResponse:
 
         if not decoded_token:
             return func.HttpResponse(
-                "Unauthorized",
+                json.dumps("Unauthorized"),
                 status_code=401
             )
         
@@ -363,13 +341,13 @@ def get_transaction_history(req:func.HttpRequest)-> func.HttpResponse:
         ))
         if len(items) == 0:
             return func.HttpResponse(
-                "Invalid Fastag",
+                json.dumps("Invalid Fastag"),
                 status_code=200
             )
         
         if items[0]['email'] != email:
             return func.HttpResponse(
-                "You are not authorized to view this",
+                json.dumps("You are not authorized to view this"),
                 status_code=401
             )
         
@@ -380,7 +358,7 @@ def get_transaction_history(req:func.HttpRequest)-> func.HttpResponse:
         ))
         if len(items) == 0:
             return func.HttpResponse(
-                "No Transactions found",
+                json.dumps("No Transactions found"),
                 status_code=200
             )
 
@@ -390,24 +368,18 @@ def get_transaction_history(req:func.HttpRequest)-> func.HttpResponse:
         )
     except KeyError:
         return func.HttpResponse(
-            "Invalid token",
+            json.dumps("Invalid token"),
             status_code=404
         )
-    except  exceptions.CosmosHttpResponseError as e:
+    except (JWTError, Exception,exceptions.CosmosHttpResponseError) as e:
         return func.HttpResponse(
-            "Internal Server Error",
-            status_code=500
-        )
-    except (JWTError, Exception) as e:
-        return func.HttpResponse(
-            str(e),
+            json.dumps("Internal Server Error"),
             status_code=500
         )
 
-@user_trigger.route('user/pay-all-challan/{vehicleId}',auth_level=func.AuthLevel.ANONYMOUS, methods=['POST'])
-def pay_all_challan(req:func.HttpRequest)-> func.HttpResponse:
+@user_trigger.route('user/pay-a-challan/{challanId}',auth_level=func.AuthLevel.ANONYMOUS,methods=["POST"])
+def pay_single_challan(req:func.HttpRequest)-> func.HttpResponse:
     try:
-        logging.warn("Start")   
         token = req.headers['Authorization']
         if(token.startswith('Bearer')):
             token = token.split(" ")[1]
@@ -415,34 +387,138 @@ def pay_all_challan(req:func.HttpRequest)-> func.HttpResponse:
 
         if not decoded_token:
             return func.HttpResponse(
-                "Unauthorized",
+                json.dumps("Unauthorized"),
                 status_code=401
             )
-        logging.warn("Starting")   
+        user_email = decoded_token['email']
+        logging.warning("Pay a single challan")
         
         database = client.get_database_client(DATABASE_NAME)
         challan_container = database.get_container_client(CHALLAN_CONTAINER)
         fastag_container = database.get_container_client(FASTAG_CONTAINER)
         transaction_container = database.get_container_client(TRANSACTION_CONTAINER)
+        vehicle_container = database.get_container_client(VEHICLE_CONTAINER)
+
+        challanId = req.route_params.get('challanId')
+
+        challan_query = 'Select * from c where c.id = "{0}"'.format(challanId)
+        challan_item = list(challan_container.query_items(query=challan_query,enable_cross_partition_query=True))
+
+        if len(challan_item) == 0:
+            return func.HttpResponse(
+                json.dumps("Invalid challan id"),
+                status_code=404
+            )
+        
+        if challan_item[0]['status'] != 'unsettled':
+            return func.HttpResponse(
+                json.dumps("You have already paid this challan"),
+                status_code=404
+            )
+        
+
+        
+        vehicleId = challan_item[0]['vehicleId']
+        challan_amount = challan_item[0]['amount']
+
+        query = 'Select * from c where c.id = "{0}" and c.email="{1}"'.format(vehicleId,user_email)
+        check_vehicle_association = list(vehicle_container.query_items(query=query,enable_cross_partition_query=True))
+
+        if len(check_vehicle_association)==0:
+            return func.HttpResponse(
+                json.dumps("You are not associated with this vehicle"),
+                status_code=404
+            )
+        logging.warn("You are associated with this vehicle")
+        fastag_query = 'Select * from c where c.vehicleId = "{0}"'.format(vehicleId)
+        fastag_info = list(fastag_container.query_items(query=fastag_query,enable_cross_partition_query=True))
+
+        if len(fastag_info)==0:
+            return func.HttpResponse(
+                json.dumps("No fastag associated with the vehicle."),
+                status_code=404
+            )
+
+        fastag_balance = int(fastag_info[0]['balance'])
+
+        if fastag_balance<challan_amount:
+            return func.HttpResponse(
+                json.dumps("Associated fastag do not have enough balance. Please recharge it."),
+                status_code=404
+            )
+        
+        fastag_info[0]['balance']= int(fastag_info[0]['balance'])- int(challan_amount)
+        fastag_container.upsert_item(fastag_info[0])
+
+        challan_item[0]['status']= 'settled'
+        challan_item[0]['settlement_date'] = str(datetime.datetime.now())
+        challan_container.upsert_item(challan_item[0])
+
+        transaction_container.create_item({
+                "timestamp":str(datetime.datetime.now()),
+                "tagId":fastag_info[0]['id'],
+                "amount":challan_item[0]['amount'],
+                "type":'debit',
+                "description":'Challan Payment'
+        },enable_automatic_id_generation=True)
+        return func.HttpResponse(
+            json.dumps("Challan payed successfully"),
+            status_code=200
+        )
+    except (exceptions.CosmosHttpResponseError,Exception,JWTError) as e:
+        logging.warning(e)
+        return func.HttpResponse(
+            json.dumps("Something went wrong"),
+            status_code=404
+        )
+
+@user_trigger.route('user/pay-all-challan/{vehicleId}',auth_level=func.AuthLevel.ANONYMOUS, methods=['POST'])
+def pay_all_challan(req:func.HttpRequest)-> func.HttpResponse:
+    try:
+        token = req.headers['Authorization']
+        if(token.startswith('Bearer')):
+            token = token.split(" ")[1]
+        decoded_token = user_middleware(token)
+
+        if not decoded_token:
+            return func.HttpResponse(
+                json.dumps("Unauthorized"),
+                status_code=401
+            )
+        
+        user_email = decoded_token['email']
+
+        database = client.get_database_client(DATABASE_NAME)
+        challan_container = database.get_container_client(CHALLAN_CONTAINER)
+        fastag_container = database.get_container_client(FASTAG_CONTAINER)
+        transaction_container = database.get_container_client(TRANSACTION_CONTAINER)
+        vehicle_container = database.get_container_client(VEHICLE_CONTAINER)
 
         vehicleId = req.route_params.get('vehicleId')
-        logging.warn(vehicleId)
+
+        query = 'Select * from c where c.id = "{0}" and c.email="{1}"'.format(vehicleId,user_email)
+        check_vehicle_association = list(vehicle_container.query_items(query=query,enable_cross_partition_query=True))
+
+        if len(check_vehicle_association)==0:
+            return func.HttpResponse(
+                json.dumps("You are not associated with this vehicle"),
+                status_code=404
+            )
+
         query = 'SELECT VALUE SUM(c.amount) FROM c WHERE c.vehicleId = "{0}" and c.status = "unsettled" '.format(vehicleId)
-        logging.warn(query)
         items = list(challan_container.query_items(
             query=query,
             enable_cross_partition_query=True
         ))
         if len(items) == 0:
             return func.HttpResponse(
-                "No Challans found",
+                json.dumps("No Challans found"),
                 status_code=200
             )
     
 
         amount = int(items[0])
 
-        # Check associated Fastag
         query = "SELECT * FROM c WHERE c.vehicleId = '{0}'".format(vehicleId)
         items = list(fastag_container.query_items(
             query=query,
@@ -451,13 +527,13 @@ def pay_all_challan(req:func.HttpRequest)-> func.HttpResponse:
 
         if len(items) == 0:
             return func.HttpResponse(
-                "No Fastag found",
+                json.dumps("No Fastag found"),
                 status_code=200
             )
     
         if int(items[0]['balance']) < amount:
             return func.HttpResponse(
-                "Insufficient Balance",
+                json.dumps("Insufficient Balance"),
                 status_code=200
             )
         
@@ -473,7 +549,6 @@ def pay_all_challan(req:func.HttpRequest)-> func.HttpResponse:
         for item in items:
             item['status'] = "settled"
             challan_container.upsert_item(item)
-            transaction_id = uuid.uuid4()
             timestamp = str(datetime.datetime.now())
             tid = item['id']
             amount = item['amount']
@@ -481,13 +556,12 @@ def pay_all_challan(req:func.HttpRequest)-> func.HttpResponse:
             description = "Challan Payment"
 
             transaction_container.create_item({
-                "id":str(transaction_id),
                 "timestamp":timestamp,
                 "tagId":tid,
                 "amount":amount,
                 "type":type_of_transaction,
                 "description":description
-            })
+            },enable_automatic_id_generation=True)
 
         return func.HttpResponse(
             body=json.dumps({
@@ -498,163 +572,13 @@ def pay_all_challan(req:func.HttpRequest)-> func.HttpResponse:
 
     except KeyError:
         return func.HttpResponse(
-            "Invalid token",
+            json.dumps("Invalid token"),
             status_code=404
         )
-    except  exceptions.CosmosHttpResponseError as e:
+    except  (exceptions.CosmosHttpResponseError,JWTError, Exception) as e:
         return func.HttpResponse(
-            "Internal Server Error",
-            status_code=500
-        )
-    except (JWTError, Exception) as e:
-        return func.HttpResponse(
-            str(e),
+            json.dumps("Internal Server Error"),
             status_code=500
         )
 
-@user_trigger.route('user/pay-a-challan/{challanId}',auth_level=func.AuthLevel.ANONYMOUS,methods=["POST"])
-def pay_single_challan(req:func.HttpRequest)-> func.HttpResponse:
-    try:
-        token = req.headers['Authorization']
-        if(token.startswith('Bearer')):
-            token = token.split(" ")[1]
-        decoded_token = user_middleware(token)
-
-        if not decoded_token:
-            return func.HttpResponse(
-                "Unauthorized",
-                status_code=401
-            )
-        logging.warning("Pay a single challan")
-        
-        database = client.get_database_client(DATABASE_NAME)
-        challan_container = database.get_container_client(CHALLAN_CONTAINER)
-        fastag_container = database.get_container_client(FASTAG_CONTAINER)
-        transaction_container = database.get_container_client(TRANSACTION_CONTAINER)
-
-        challanId = req.route_params.get('challanId')
-        logging.warn(challanId)
-        challan_query = 'Select * from c where c.id = "{0}"'.format(challanId)
-
-        challan_item = list(challan_container.query_items(query=challan_query,enable_cross_partition_query=True))
-        if len(challan_item) == 0:
-            return func.HttpResponse(
-                json.dumps("Invalid challan id"),
-                status_code=404
-            )
-        vehicleId = challan_item[0]['vehicleId']
-        challan_amount = challan_item[0]['amount']
-        fastag_query = 'Select * from c where c.vehicleId = "{0}"'.format(vehicleId)
-        fastag_info = list(fastag_container.query_items(query=fastag_query,enable_cross_partition_query=True))
-
-        if len(fastag_info)==0:
-            return func.HttpResponse(
-                json.dumps("No fastag associated with the vehicle."),
-                status_code=404
-            )
-
-        fastag_balance = fastag_info[0]['balance']
-
-        if fastag_balance<challan_amount:
-            return func.HttpResponse(
-                json.dumps("Associated fastag do not have enough balance. Please recharge it."),
-                status_code=404
-            )
-        
-        fastag_info[0]['balance']= int(fastag_info[0]['balance'])- int(challan_amount)
-        fastag_container.upsert_item(fastag_info[0])
-
-        logging.warn("Till here")
-        challan_item[0]['status']= 'settled'
-        challan_item[0]['settlement_date'] = str(datetime.datetime.now())
-        challan_container.upsert_item(challan_item[0])
-
-        transaction_container.create_item({
-                "timestamp":datetime.datetime.now(),
-                "tagId":fastag_info[0]['id'],
-                "amount":challan_item[0]['amount'],
-                "type":'Debit',
-                "description":'Challan Payment'
-        },enable_automatic_id_generation=True)
-        return func.HttpResponse(
-            json.dumps("Challan payed successfully"),
-            status_code=200
-        )
-    except (exceptions.CosmosHttpResponseError,Exception) as e:
-        logging.error(e)
-        return func.HttpResponse(
-            json.dumps("Something went wrong"),
-            status_code=404
-        )
-
-@user_trigger.route('user/send-alert',auth_level=func.AuthLevel.ANONYMOUS, methods=['POST'])
-def send_alert(req:func.HttpRequest)-> func.HttpResponse:
-    try:
-        logging.warn("Alert Trigger Started")
-        database = client.get_database_client(DATABASE_NAME)
-        challan_container = database.get_container_client(CHALLAN_CONTAINER)
-        vehicle_container = database.get_container_client(VEHICLE_CONTAINER)
-
-        query = 'SELECT DISTINCT c.vehicleId,c.amount FROM c WHERE c.status = "unsettled"'
-
-        query_results = list(challan_container.query_items(query=query,enable_cross_partition_query=True))
-        vehicle_to_challan = {}
-        for result in query_results:
-            try:
-                vehicle_to_challan[result['vehicleId']]+=result['amount']
-            except KeyError:
-                vehicle_to_challan[result['vehicleId']]= result['amount']
-            
-        
-        vehicleIds = tuple(vehicle_to_challan.keys())
-        logging.warn(vehicleIds)
-        query = 'SELECT c.email,c.id from c where c.id IN {0}'.format(vehicleIds)
-        logging.warn(query)
-        email_to_vehicleIds = list(vehicle_container.query_items(query=query, enable_cross_partition_query=True))
-
-        vehicle_to_email_map = {}
-        for email_to_vehicle in email_to_vehicleIds:
-            vehicle_to_email_map[email_to_vehicle['id']]= email_to_vehicle['email']
-        
-
-        subject = "Pending Challans on your vehicle with vehicle number - {0}"
-        body = """Hello Sir,\n
-                You have pending challans on your vehicle with vehicle number {0}.\n
-                Total Amount you have to pay is {1}.\n
-                Log in to our portal for detail description of your challans and to pay your challans.\n
-                If you won't pay your challans then your challans will be auto payed on your next toll visit.\n
-                If your fastag won't have enough balance,then your fastag will be blacklisted"""
-
-        for vehicle in vehicle_to_challan.keys():
-            email = vehicle_to_email_map[vehicle]
-            amount = vehicle_to_challan[vehicle]
-            vehicleId = vehicle
-
-            new_subject = subject.format(vehicleId)
-            new_body = body.format(vehicleId,amount)
-            email_service.send(email,new_subject,new_body)
-
-        return func.HttpResponse(
-            body=json.dumps("Success"),
-            status_code=200
-        )
-    
-    except exceptions.CosmosHttpResponseError as e:
-        logging.warn("Testing")
-        logging.warn(e)
-        return func.HttpResponse(
-            body=json.dumps({
-                'Message':"Sending alert"
-            })
-        )
-# Pay all challan - Done
-# Fastag Information - Done
-# Recharge Fastag - Done
-# Transaction History - Done
-
-# RSA for jwt token - Done
-# RTO -CLI based project
-# Police - CLI based project
-# version.tf and variables.tf
-# Change your password
 
