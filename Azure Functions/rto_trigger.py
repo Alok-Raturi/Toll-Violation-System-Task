@@ -3,8 +3,9 @@ import json
 from azure.cosmos import  exceptions
 from email_validator import validate_email,EmailNotValidError
 from utils.db_connection import client
-from utils.password import hash_password,check_password_strength,PASSWORD_CONSTRAINT
+from utils.password import hash_password,check_password_strength,PASSWORD_CONSTRAINT,check_password
 from utils.send_email import send_email
+import logging
 
 rto_triggers = func.Blueprint()
 
@@ -52,6 +53,7 @@ Please use this id for any future reference.
 @rto_triggers.route(route="rto/create-police-man",methods=["POST"])
 def create_police_man(req: func.HttpRequest) -> func.HttpResponse:
     try:
+        logging.warning("Creating Police Man")
         body = json.loads(req.get_body().decode('utf-8'))
         database = client.get_database_client(DATABASE_NAME)
         user_container = database.get_container_client(USER_CONTAINER)
@@ -59,18 +61,21 @@ def create_police_man(req: func.HttpRequest) -> func.HttpResponse:
         designation = body['designation']
         password = body['password']
         email = body['email']
+        logging.warning(f"Email: {email}")
 
         if designation != 'police':
+            logging.error("Invalid Designation")
             return func.HttpResponse(
-                "Invalid Designation",
+                json.dumps("Invalid Designation"),
                 status_code=404
             )
         
         validate_email(email)
 
         if not check_password_strength(password):
+            logging.error("Password Constraint")
             return func.HttpResponse(
-                PASSWORD_CONSTRAINT,
+                json.dumps(PASSWORD_CONSTRAINT),
                 status_code=404
             )    
 
@@ -80,8 +85,9 @@ def create_police_man(req: func.HttpRequest) -> func.HttpResponse:
             enable_cross_partition_query=True
         ))
         if len(items) != 0:
+            logging.error("User already exists")
             return func.HttpResponse(
-                "User already exists",
+                json.dumps("User already exists"),
                 status_code=404
             )
         
@@ -94,29 +100,34 @@ def create_police_man(req: func.HttpRequest) -> func.HttpResponse:
             "email":email
         },enable_automatic_id_generation=True)
         send_email(email,USER_CREATED_SUBJECT,USER_CREATED_BODY.format(email,password,designation))
+        logging.info("Successfully created police man user")
         return func.HttpResponse(
-            f"Successfully created police man user",
+            json.dumps("Successfully created police man user"),
             status_code=201
         )
     except EmailNotValidError:
+        logging.error("Invalid email")
         return func.HttpResponse(
-            "Invalid Email",
+            json.dumps("Invalid Email"),
             status_code=404
         )
     except KeyError:
+        logging.warning("Invalid body")
         return func.HttpResponse(
-            "Invalid body",
+            json.dumps("Invalid body"),
             status_code=404
         )
-    except (exceptions.CosmosHttpResponseError,Exception):
+    except (exceptions.CosmosHttpResponseError,Exception) as e:
+        logging.warning(e)
         return func.HttpResponse(
-            "Internal Server Error",
+            json.dumps("Internal Server Error"),
             status_code=501
         )
 
 @rto_triggers.route(route="rto/create-toll-plaza-man",methods=["POST"])
 def create_toll_plaza_man(req: func.HttpRequest) -> func.HttpResponse:
     try:
+        logging.info("Toll plaza man triggered")
         body = json.loads(req.get_body().decode('utf-8'))
         database = client.get_database_client(DATABASE_NAME)
         user_container = database.get_container_client(USER_CONTAINER)
@@ -126,16 +137,20 @@ def create_toll_plaza_man(req: func.HttpRequest) -> func.HttpResponse:
         password = body['password']
         email = body['email']
 
+        logging.info(f"Email : {email}")
+
         if designation != 'toll':
+            logging.error("Invalid Designation")
             return func.HttpResponse(
-                "Invalid Designation",
+                json.dumps("Invalid Designation"),
                 status_code=404
             )
 
         validate_email(email)
         if not check_password_strength(password):
+            logging.error("Password constraint do not match")
             return func.HttpResponse(
-                PASSWORD_CONSTRAINT,
+                json.dumps(PASSWORD_CONSTRAINT),
                 status_code=404
             )    
 
@@ -145,8 +160,9 @@ def create_toll_plaza_man(req: func.HttpRequest) -> func.HttpResponse:
             enable_cross_partition_query=True
         ))
         if len(items) != 0:
+            logging.error("User already exists")
             return func.HttpResponse(
-                "User already exists",
+                json.dumps("User already exists"),
                 status_code=404
             )
 
@@ -157,29 +173,34 @@ def create_toll_plaza_man(req: func.HttpRequest) -> func.HttpResponse:
             "email":email
         },enable_automatic_id_generation=True)
         send_email(email,USER_CREATED_SUBJECT,USER_CREATED_BODY.format(email,password,designation))
+        logging.info("Successfully created toll plaza user")
         return func.HttpResponse(
-            f"Successfully created toll plaza user",
+            json.dumps("Successfully created toll plaza user"),
             status_code=201
         )
     except EmailNotValidError:  
+        logging.error("Invalid email")
         return func.HttpResponse(
-            "Invalid Email",
+            json.dumps("Invalid Email"),
             status_code=404
         )
     except KeyError:
+        logging.error("Invalid body")
         return func.HttpResponse(
-            "Invalid body",
+            json.dumps("Invalid body"),
             status_code=404
         )
-    except (exceptions.CosmosHttpResponseError,Exception):
+    except (exceptions.CosmosHttpResponseError,Exception) as e:
+        logging.error(e)
         return func.HttpResponse(
-            "Internal Server Error",
+            json.dumps("Internal Server Error"),
             status_code=501
         )
 
 @rto_triggers.route(route="rto/create-vehicle",methods=["POST"])
 def create_vehicle(req: func.HttpRequest) -> func.HttpResponse:
     try:
+        logging.info("Started with creating vehicle")
         body = json.loads(req.get_body().decode('utf-8'))
 
         database = client.get_database_client(DATABASE_NAME)
@@ -192,80 +213,85 @@ def create_vehicle(req: func.HttpRequest) -> func.HttpResponse:
         designation = body['designation']
         password = body['password']
 
+        logging.info(f"Email : {email}")
+
         if designation != 'user':
+            logging.error("Invalid Designation")
             return func.HttpResponse(
-                "Invalid Designation",
+                json.dumps("Invalid Designation"),
                 status_code=404
             )
 
         validate_email(email)
+   
 
+        query = f"SELECT c.password FROM c WHERE c.email = '{email}' and c.designation = 'user'"
+        get_user_by_email = list(user_container.query_items(query=query,enable_cross_partition_query=True))
+        logging.warn(get_user_by_email)
 
-        if designation == 'user':  
-            query = f"SELECT * FROM c WHERE c.email = '{email}'"
-            get_user_by_email = list(user_container.query_items(query=query,enable_cross_partition_query=True))
-
-            query = f"SELECT * FROM c WHERE c.id = '{vehicle_id}'"
-            get_vehicle_by_id = list(vehicle_container.query_items(query=query,enable_cross_partition_query=True))
-
-            if len(get_vehicle_by_id) != 0:
-                return func.HttpResponse(
-                    "Vehicle Id already exists",
-                    status_code=404
-                )
-
-            if len(get_user_by_email) == 0:
-                if not check_password_strength(password):
-                    return func.HttpResponse(
-                        PASSWORD_CONSTRAINT,
-                        status_code=404
-                    )
-                bcrypt_password = hash_password(password)
-                user_entry= {
-                    "name": name,
-                    "designation": designation,
-                    "password": bcrypt_password,
-                    "email":email
-                }
-                vehicle_entry={
-                    "id": vehicle_id,
-                    "email": email,
-                    "tagId":""
-                }
-                user_container.create_item(user_entry,enable_automatic_id_generation=True)
-                send_email(email,USER_CREATED_SUBJECT,USER_CREATED_BODY.format(email,password,designation))
-
-            vehicle_container.create_item(vehicle_entry)
-            send_email(email,VEHICLE_ISSUED_SUBJECT,VEHICLE_ISSUED_BODY.format(name,vehicle_id,email))
+        if len(get_user_by_email)>0 and (not check_password(password,get_user_by_email[0]['password'])):
+            logging.error("User wants to issue a vehicle but enter wrong password while issuing vehicle.")
             return func.HttpResponse(
-                f"Successfully created vehicle",
-                status_code=201
+                json.dumps("User already exist with your email. Please enter correct password if you want to issue a new vehicle with the same vehicle id."),
+                status_code=404
             )
-        else:
+        
+        query = f"SELECT * FROM c WHERE c.id = '{vehicle_id}'"
+        get_vehicle_by_id = list(vehicle_container.query_items(query=query,enable_cross_partition_query=True))
+
+        if len(get_vehicle_by_id) != 0:
+            logging.error("Vehicle Id already exist")
             return func.HttpResponse(
-                "Invalid Designation",
+                json.dumps("Vehicle Id already exists"),
                 status_code=404
             )
 
-    except EmailNotValidError:  
+        if len(get_user_by_email) == 0:
+            bcrypt_password = hash_password(password)
+            user_entry= {
+                "name": name,
+                "designation": designation,
+                "password": bcrypt_password,
+                "email":email
+            }
+            user_container.create_item(user_entry,enable_automatic_id_generation=True)
+            send_email(email,USER_CREATED_SUBJECT,USER_CREATED_BODY.format(email,password,designation))
+        logging.warning("Started creating vehicle")
+        vehicle_entry={
+            "id": vehicle_id,
+            "email": email,
+            "tagId":""
+        }
+        vehicle_container.create_item(vehicle_entry)
+        send_email(email,VEHICLE_ISSUED_SUBJECT,VEHICLE_ISSUED_BODY.format(name,vehicle_id,email))
+        logging.info("Successfully issued vehicle.")
         return func.HttpResponse(
-            "Invalid Email",
+            json.dumps("Successfully created vehicle"),
+            status_code=201
+        )
+    except EmailNotValidError:  
+        logging.error("Invalid Email")
+        return func.HttpResponse(
+            json.dumps("Invalid Email"),
             status_code=404
         )
     except KeyError:
+        logging.error("Invalid body")
         return func.HttpResponse(
-            "Invalid body",
+            json.dumps("Invalid body"),
             status_code=404
         )
-    except (exceptions.CosmosHttpResponseError,Exception):
+    except (exceptions.CosmosHttpResponseError,Exception) as ex:
+        logging.error(ex)
         return func.HttpResponse(
-            "Internal Server Error",
+            json.dumps("Internal Server Error"),
             status_code=501
         )    
 
 @rto_triggers.route(route="rto/create-fastag",methods=["POST"])
 def create_fastag(req: func.HttpRequest) -> func.HttpResponse:
     try:
+        logging.info("Starting with associating Fastag")
         body = json.loads(req.get_body().decode('utf-8'))
 
         database = client.get_database_client(DATABASE_NAME)
@@ -280,14 +306,16 @@ def create_fastag(req: func.HttpRequest) -> func.HttpResponse:
         get_vehicle_by_id = list(vehicle_container.query_items(query=query,enable_cross_partition_query=True))
 
         if len(get_vehicle_by_id) == 0:
+            logging.error("No vehicle exist with this id.")
             return func.HttpResponse(
-                "Your vehicle id is not valid",
+                json.dumps("Your vehicle id is not valid"),
                 status_code=404
             )
         current_tagid = get_vehicle_by_id[0]['tagId']
         if current_tagid != "":
+            logging.error("Vehicle is already associated with a fastag.")
             return func.HttpResponse(
-                "Your vehicle already has a fastag",
+                json.dumps("Your vehicle already has a fastag"),
                 status_code=404
             )
         
@@ -295,7 +323,7 @@ def create_fastag(req: func.HttpRequest) -> func.HttpResponse:
         get_fastag_by_id = list(fastag_container.query_items(query=query,enable_cross_partition_query=True))
         if len(get_fastag_by_id) != 0:
             return func.HttpResponse(
-                "Fastag id already exists",
+                json.dumps("Fastag id already exists"),
                 status_code=404
             )
         email = get_vehicle_by_id[0]['email']
@@ -312,18 +340,21 @@ def create_fastag(req: func.HttpRequest) -> func.HttpResponse:
             "email": get_vehicle_by_id[0]['email']
         })
         send_email(email,FASTAG_ISSUED_SUBJECT,FASTAG_ISSUED_BODY.format(email,tagid,vehicleId,email,balance))
+        logging.info("Successfully created fastag and associated it with fastag.")
         return func.HttpResponse(
-            "Successfully created fastag",
+            json.dumps("Successfully created fastag"),
             status_code=201
         )
     except KeyError:
+        logging.error("Invalid body")
         return func.HttpResponse(
-            "Invalid body",
+            json.dumps("Invalid body"),
             status_code=404
         )
-    except (exceptions.CosmosHttpResponseError,exceptions.CosmosResourceExistsError) as e:
+    except (exceptions.CosmosHttpResponseError,exceptions.CosmosResourceExistsError,Exception) as e:
+        logging.error(e)
         return func.HttpResponse(
-            "Internal Server Error",
+            json.dumps("Internal Server Error"),
             status_code=501
         )
 

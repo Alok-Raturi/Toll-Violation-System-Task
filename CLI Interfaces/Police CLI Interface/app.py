@@ -1,12 +1,13 @@
 import requests
 import json
+import datetime
 
 PROMPT ="""
 PRESS 1 FOR LOGIN
 PRESS 2 FOR EXIT
 """
 
-BASE_URL = "http://localhost:7071/api/"
+BASE_URL = "http://localhost:7071/api/police/"
 
 PROMPT_AFTER_LOGIN = """
 PRESS 1 FOR CREATING A CHALLAN
@@ -21,7 +22,7 @@ class Traffic_Police:
     
     def login(self):
         auth_data =  json.dumps({"email":self.email,"password":self.password})
-        response = requests.post(BASE_URL + "police/login",data=auth_data)
+        response = requests.post(BASE_URL + "login",data=auth_data)
         if(response.status_code==200):
             self.token = response.json()['access_token']
         return {
@@ -30,7 +31,7 @@ class Traffic_Police:
         }
     
     def view_vehicle_challan(self,vehicle_number):
-        response = requests.get(f"{BASE_URL}police/get-challan/{vehicle_number}",headers={"Authorization":self.token})
+        response = requests.get(f"{BASE_URL}get-challan/{vehicle_number}",headers={"Authorization":self.token})
         return {
             "status":response.status_code,
             "data":response.json(),
@@ -43,7 +44,7 @@ class Traffic_Police:
             "description":description,
             "location":location
         })
-        response = requests.post(BASE_URL + "police/create-challan",data=challan_data,headers={"Authorization":self.token})
+        response = requests.post(BASE_URL + "create-challan",data=challan_data,headers={"Authorization":self.token})
         return {
             "status":response.status_code,
             "data":response.json(),
@@ -87,8 +88,9 @@ if __name__ == '__main__':
                     if response['status']==200:
                         challan_list = list(response['data'])
                         print("---------------------- All Challans ------------------")
+                        print("ID\t\t\t\t\tAmount\tLocation\t\tStatus\t\tDescription\tDate\t\tDue Time")
                         for challan in challan_list:
-                            print(f"{challan['id']}\t{challan['amount']}\t{challan['location']}\t{challan['status']}\t{challan['description']}")
+                            print(f"{challan['id']}\t{challan['amount']}\t{challan['location']}\t{challan['status']}\t{challan['description']}\t{challan['date']}\t{datetime.datetime.fromtimestamp(challan['due_time']).strftime('%Y-%m-%d %H:%M:%S')}")
                     else:
                         print(response['data'])
 

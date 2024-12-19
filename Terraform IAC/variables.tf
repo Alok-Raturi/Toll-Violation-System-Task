@@ -1,25 +1,39 @@
 variable "subscription_id" {
   description = "The subscription ID in which the resources will be created."
-  default = "414bc6d2-a97f-40e9-a40f-63e7d46d0e7a"
+  default = "8a228cff-023f-42af-818d-51a84a828d46"
   type = string
 }
 
 variable "region" {
   description = "The region in which the resources will be created."
-  default     = "West Europe"
+  default     = "East US"
   type = string
 }
 
+
 variable "resource_group_name" {
   description = "The name of the resource group in which the resources will be created."
-  default     = "Toll-Violation-Detection-System"
+  default     = "Toll-Violation-Detection-System-Alok-Raturi"
   type = string
 }
+
+variable "resource_group_name_2" {
+  description = "The name of the resource group in which the resources will be created."
+  default     = "Function-App-RG-Alok-Raturi"
+  type = string
+}
+
+variable "resource_group_name_3" {
+  description = "The name of the resource group in which the resources will be created."
+  default     = "Communication-Service-RG-Alok-Raturi"
+  type = string
+}
+
 
 # DB Variables
 variable "cosmosdb_account_name" {
   description = "The name of the Cosmos DB account."
-  default     = "tolldatabasesystem"
+  default     = "tolldbmsalokraturi"
   type = string
 }
 
@@ -64,7 +78,7 @@ variable "data_location_for_communication_service" {
 # Function App Variables
 variable "function_app_log_storage_name"{
     description = "The name of the storage account for function app logs."
-    default     = "backendlogsstorage"
+    default     = "alokraturi09storage"
     type = string
 }
 
@@ -82,7 +96,7 @@ variable "function_app_application_insights_name"{
 
 variable "function_app_container"{
     description = "The name of the function app container."
-    default = "backendfunctionapplication"
+    default = "alokraturifunctionapp"
     type = string
 }
 

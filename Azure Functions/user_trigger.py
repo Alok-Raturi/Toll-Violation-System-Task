@@ -8,6 +8,7 @@ import logging
 import uuid
 import datetime
 import utils.send_email as email_service
+from utils.password import check_password
 
 DATABASE_NAME = "Toll-Violation-Detection-System-DB"
 USER_CONTAINER = "User-Table"
@@ -38,7 +39,7 @@ def login_user(req: func.HttpRequest)->func.HttpResponse:
         email = body['email']
         password = body['password']
 
-        query = "SELECT * FROM c WHERE c.email = '{0}' and c.password = '{1}' and c.designation = 'user'".format(email,password)
+        query = "SELECT c.id,c.password FROM c WHERE c.email = '{0}' and c.designation = 'user'".format(email)
         items = list(user_container.query_items(
             query=query,
             enable_cross_partition_query=True
@@ -49,36 +50,35 @@ def login_user(req: func.HttpRequest)->func.HttpResponse:
                 "Invalid Email or Password",
                 status_code=404
             )
-        else:
-            if(items[0]['designation'] != "user"):
-                return func.HttpResponse(
-                    "You are not a user.",
-                    status_code=404
-                )
-            token = encode_token({
-                "email":email,
-                "designation":items[0]['designation'],
-                "id":items[0]['id']
-            })
+        user_password = items[0]['password']
+        logging.warning(user_password)
+        if not check_password(password,user_password):
+            logging.error("Wrong password")
             return func.HttpResponse(
-                body=json.dumps({
-                    "access_token":token
-                }),
-                status_code=200
+                json.dumps("Invalid email or password"),
+                status_code=404
             )
+
+        token = encode_token({
+            "email":email,
+            "designation":'user',
+            "id":items[0]['id']
+        })
+        return func.HttpResponse(
+            body=json.dumps({
+                "access_token":token
+            }),
+            status_code=200
+        )
     except KeyError:
         return func.HttpResponse(
             "Invalid body",
             status_code=404
         )
-    except  (exceptions.CosmosHttpResponseError) as e:
+    except  (exceptions.CosmosHttpResponseError,JWTError, Exception) as e:
+        logging.error(e)
         return func.HttpResponse(
             "Internal Server Error",
-            status_code=500
-        )
-    except (JWTError, Exception) as e:
-        return func.HttpResponse(
-            str(e),
             status_code=500
         )
 
@@ -441,7 +441,6 @@ def pay_all_challan(req:func.HttpRequest)-> func.HttpResponse:
     
 
         amount = int(items[0])
-        logging.warn(amount)
 
         # Check associated Fastag
         query = "SELECT * FROM c WHERE c.vehicleId = '{0}'".format(vehicleId)
@@ -513,12 +512,80 @@ def pay_all_challan(req:func.HttpRequest)-> func.HttpResponse:
             status_code=500
         )
 
-@user_trigger.route('user/pay-challan/{challanId}')
-def pay_challan(req:func.HttpRequest)-> func.HttpResponse:
+@user_trigger.route('user/pay-a-challan/{challanId}',auth_level=func.AuthLevel.ANONYMOUS,methods=["POST"])
+def pay_single_challan(req:func.HttpRequest)-> func.HttpResponse:
     try:
-        pass
-    except:
-        pass
+        token = req.headers['Authorization']
+        if(token.startswith('Bearer')):
+            token = token.split(" ")[1]
+        decoded_token = user_middleware(token)
+
+        if not decoded_token:
+            return func.HttpResponse(
+                "Unauthorized",
+                status_code=401
+            )
+        logging.warning("Pay a single challan")
+        
+        database = client.get_database_client(DATABASE_NAME)
+        challan_container = database.get_container_client(CHALLAN_CONTAINER)
+        fastag_container = database.get_container_client(FASTAG_CONTAINER)
+        transaction_container = database.get_container_client(TRANSACTION_CONTAINER)
+
+        challanId = req.route_params.get('challanId')
+        logging.warn(challanId)
+        challan_query = 'Select * from c where c.id = "{0}"'.format(challanId)
+
+        challan_item = list(challan_container.query_items(query=challan_query,enable_cross_partition_query=True))
+        if len(challan_item) == 0:
+            return func.HttpResponse(
+                json.dumps("Invalid challan id"),
+                status_code=404
+            )
+        vehicleId = challan_item[0]['vehicleId']
+        challan_amount = challan_item[0]['amount']
+        fastag_query = 'Select * from c where c.vehicleId = "{0}"'.format(vehicleId)
+        fastag_info = list(fastag_container.query_items(query=fastag_query,enable_cross_partition_query=True))
+
+        if len(fastag_info)==0:
+            return func.HttpResponse(
+                json.dumps("No fastag associated with the vehicle."),
+                status_code=404
+            )
+
+        fastag_balance = fastag_info[0]['balance']
+
+        if fastag_balance<challan_amount:
+            return func.HttpResponse(
+                json.dumps("Associated fastag do not have enough balance. Please recharge it."),
+                status_code=404
+            )
+        
+        fastag_info[0]['balance']= int(fastag_info[0]['balance'])- int(challan_amount)
+        fastag_container.upsert_item(fastag_info[0])
+
+        logging.warn("Till here")
+        challan_item[0]['status']= 'settled'
+        challan_item[0]['settlement_date'] = str(datetime.datetime.now())
+        challan_container.upsert_item(challan_item[0])
+
+        transaction_container.create_item({
+                "timestamp":datetime.datetime.now(),
+                "tagId":fastag_info[0]['id'],
+                "amount":challan_item[0]['amount'],
+                "type":'Debit',
+                "description":'Challan Payment'
+        },enable_automatic_id_generation=True)
+        return func.HttpResponse(
+            json.dumps("Challan payed successfully"),
+            status_code=200
+        )
+    except (exceptions.CosmosHttpResponseError,Exception) as e:
+        logging.error(e)
+        return func.HttpResponse(
+            json.dumps("Something went wrong"),
+            status_code=404
+        )
 
 @user_trigger.route('user/send-alert',auth_level=func.AuthLevel.ANONYMOUS, methods=['POST'])
 def send_alert(req:func.HttpRequest)-> func.HttpResponse:

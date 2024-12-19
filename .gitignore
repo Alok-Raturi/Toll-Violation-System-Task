@@ -1,8 +1,155 @@
 /Terraform IAC/cred.txt
 /Terraform IAC/.terraform
 /Terraform IAC/.terraform.lock.hcl
+/**/.vscode
+.vscode
+/Terraform IAC/terraform.tfstate
+/Terraform IAC/terraform.tfstate.backup
+
+
+# Azure Function 
 /**/__pycache_ 
 /Azure Functions/private_key.pem
 /Azure Functions/public_key.pem
 
-/CLI Interfaces/Police CLI Interface/.venv
+# Byte-compiled / optimized / DLL files
+/Azure Functions/__pycache__/
+/Azure Functions/*.py[cod]
+/Azure Functions/*$py.class
+
+# C extensions
+/Azure Functions/*.so
+
+# Distribution / packaging
+/Azure Functions/.Python
+/Azure Functions/build/
+/Azure Functions/develop-eggs/
+/Azure Functions/dist/
+/Azure Functions/downloads/
+/Azure Functions/eggs/
+/Azure Functions/.eggs/
+/Azure Functions/lib/
+/Azure Functions/lib64/
+/Azure Functions/parts/
+/Azure Functions/sdist/
+/Azure Functions/var/
+/Azure Functions/wheels/
+/Azure Functions/pip-wheel-metadata/
+/Azure Functions/share/python-wheels/
+/Azure Functions/*.egg-info/
+/Azure Functions/.installed.cfg
+/Azure Functions/*.egg
+/Azure Functions/MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+#/Azure Functions/*.manifest
+#/Azure Functions/*.spec
+
+# Installer logs
+/Azure Functions/pip-log.txt
+/Azure Functions/pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+/Azure Functions/htmlcov/
+/Azure Functions/.tox/
+/Azure Functions/.nox/
+/Azure Functions/.coverage
+/Azure Functions/.coverage.*
+/Azure Functions/.cache
+/Azure Functions/nosetests.xml
+/Azure Functions/coverage.xml
+/Azure Functions/*.cover
+/Azure Functions/.hypothesis/
+/Azure Functions/.pytest_cache/
+
+# Translations
+/Azure Functions/*.mo
+/Azure Functions/*.pot
+
+# Django stuff:
+#/Azure Functions/*.log
+#/Azure Functions/local_settings.py
+#/Azure Functions/db.sqlite3
+
+# Flask stuff:
+#/Azure Functions/instance/
+/Azure Functions/.webassets-cache
+
+# Scrapy stuff:
+#/Azure Functions/.scrapy
+
+# Sphinx documentation
+/Azure Functions/docs/_build/
+/Azure Functions/.vscode
+
+# PyBuilder
+/Azure Functions/target/
+
+# Jupyter Notebook
+/Azure Functions/.ipynb_checkpoints
+
+# IPython
+/Azure Functions/profile_default/
+/Azure Functions/ipython_config.py
+
+# pyenv
+/Azure Functions/.python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don’t work, or not
+#   install all needed dependencies.
+/Azure Functions/#Pipfile.lock
+
+# celery beat schedule file
+/Azure Functions/celerybeat-schedule
+
+# SageMath parsed files
+/Azure Functions/*.sage.py
+
+# Environments
+/Azure Functions/.env
+/Azure Functions/.venv
+/Azure Functions/env/
+/Azure Functions/venv/
+#/Azure Function/ENV/
+#/Azure Function/env.bak/
+#/Azure Function/venv.bak/
+
+# Spyder project settings
+/Azure Function/.spyderproject
+/Azure Function/.spyproject
+
+# Rope project settings
+/Azure Function/.ropeproject
+
+# mkdocs documentation
+/Azure Function/site
+
+# mypy
+/Azure Function/.mypy_cache/
+/Azure Function/.dmypy.json
+/Azure Function/dmypy.json
+
+# Pyre type checker
+/Azure Function/.pyre/
+
+# Azure Functions artifacts
+/Azure Function/bin
+/Azure Function/obj
+/Azure Function/appsettings.json
+/Azure Function/local.settings.json
+
+# Azurite artifacts
+/Azure Function/__blobstorage__
+/Azure Function/__queuestorage__
+/Azure Function/__azurite_db*__.json
+/Azure Function/.python_packages/
+
+
+
+# CLI Interfaces
+/CLI Interfaces/**/.venv

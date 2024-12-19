@@ -1,15 +1,16 @@
 from bcrypt import hashpw, gensalt, checkpw
 import re
 
-PASSWORD_REGEX = "^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8}$"
+PASSWORD_REGEX = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,20}$"
 
 PASSWORD_CONSTRAINT = """
 Your password:\n
-    - should have 2 uppercase characters\n
-    - should have 1 special character\n
-    - should have 2 digits\n
-    - should have 3 lowercase characters\n
-    - should have minimum length of 8 characters
+    - should have at least 1 uppercase characters\n
+    - should have at least 1 special character - ?=.*[@#$%^&+=]\n
+    - should have at least 1 digits\n
+    - should have at least 1 lowercase characters\n
+    - should not contain any whitespace characters\n
+    - should have minimum length of 8 characters and max length of 20 characters
 """
 
 def hash_password(password: str) -> str:            

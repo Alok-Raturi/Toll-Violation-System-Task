@@ -2,6 +2,7 @@ import azure.functions as func
 import json
 from utils.db_connection import client
 from utils.jwt_decode import encode_token, decode_token
+from utils.password import check_password
 from jose import JWTError
 from azure.cosmos import  exceptions
 import uuid
@@ -47,53 +48,52 @@ def police_middleware(token:str):
 def police_login(req: func.HttpRequest) -> func.HttpResponse:
     try:
         body = json.loads(req.get_body().decode('utf-8'))
-        print(body)
         database = client.get_database_client(DATABASE_NAME)
         user_container = database.get_container_client(USER_CONTAINER)
         email = body['email']
         password = body['password']
 
-        bcrypt_password = str(bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()))
-        
-        logging.warn(email)
-        logging.warn(password)
-        logging.warn(bcrypt_password)
-
-        query = '''SELECT * FROM c WHERE c.email = "{0}" and c.password = "{1}" and c.designation="police"'''.format(email,bcrypt_password)
+        query = "SELECT * FROM c WHERE c.email = '{0}' and c.designation='police'".format(email)
 
         items = list(user_container.query_items(
             query=query,
             enable_cross_partition_query=True
         ))
-        print(items)
+
         if len(items) == 0:
+            logging.error("Invalid Email or Password")
             return func.HttpResponse(
                 json.dumps("Invalid Email or Password"),
                 status_code=404
             )
-        else:
-            if(items[0]['designation'] != "police"):
-                return func.HttpResponse(
-                    json.dumps("You are not a police."),
-                    status_code=404
-                )
-            token = encode_token({
-                "email":email,
-                "designation":items[0]['designation'],
-                "id":items[0]['id']
-            })
+
+        if not check_password(password, items[0]['password']):
+            logging.error("Incorrect password")
             return func.HttpResponse(
-                body=json.dumps({
-                    "access_token":token
-                }),
-                status_code=200
+                json.dumps("Invalid Email or Password"),
+                status_code=404
             )
+
+        token = encode_token({
+            "email":email,
+            "designation":items[0]['designation'],
+            "id":items[0]['id']
+        })
+        logging.info("Login Success")
+        return func.HttpResponse(
+            body=json.dumps({
+                "access_token":token
+            }),
+            status_code=200
+        )
     except KeyError:
+        logging.error("Invalid Body")
         return func.HttpResponse(
             json.dumps("Invalid body"),
             status_code=404
         )
     except (JWTError, Exception,exceptions.CosmosHttpResponseError) as e:
+        logging.error(e)
         return func.HttpResponse(
             json.dumps("Internal Server Error"),
             status_code=500
@@ -153,7 +153,6 @@ def get_challan_by_vehicle_id(req: func.HttpRequest) -> func.HttpResponse:
         )
 
 
-
 @police_trigger.route(route="police/create-challan", auth_level=func.AuthLevel.ANONYMOUS,methods=["POST"])
 def create_challan_by_vehicleId(req: func.HttpRequest) -> func.HttpResponse:
     try:
@@ -174,7 +173,8 @@ def create_challan_by_vehicleId(req: func.HttpRequest) -> func.HttpResponse:
 
         challanId = uuid.uuid4()
         vehicleId = body['vehicleId']
-        amount = body['amount']
+        amount = f"{body['amount']}"
+
         if(amount.isnumeric()):
             amount = int(amount)
             if(amount<0):
@@ -190,7 +190,7 @@ def create_challan_by_vehicleId(req: func.HttpRequest) -> func.HttpResponse:
 
         location = body['location']
         description = body['description']
-        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        date = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         due_time = time.time()+3600*24*90
         status= "unsettled"
         settlement_date = ""
@@ -204,9 +204,10 @@ def create_challan_by_vehicleId(req: func.HttpRequest) -> func.HttpResponse:
         if(len(vehicle) == 0):
             return func.HttpResponse(
                 json.dumps("Vehicle id is not valid."),
-                status_code=404)
+                status_code=404
+            )
+        
         item = challan_container.create_item({
-            "id": str(challanId),
             "vehicleId": vehicleId,
             "amount": amount,
             "location": location,
@@ -215,23 +216,26 @@ def create_challan_by_vehicleId(req: func.HttpRequest) -> func.HttpResponse:
             "due_time": due_time,
             "status": status,
             "settlement_date": settlement_date
-        })
+        },enable_automatic_id_generation=True)
         email = vehicle[0]['email']
 
         subject = CHALLAN_SUBJECT.format(vehicleId)
         body = CHALLAN_BODY.format(vehicleId,amount,location,description)
         send_email(email,subject,body)
+        logging.info("Challan Created Successfully")
         return func.HttpResponse(
             json.dumps("Created Challan Successfully"),
             status_code=201
         )
     except KeyError as e:
+        logging.error(e)
         return func.HttpResponse(
             body=json.dumps("Invalid Body"),
             status_code=404
         )
 
     except (Exception,exceptions.CosmosHttpResponseError,JWTError) as e:
+        logging.error(e)
         return func.HttpResponse(
             body=json.dumps("Internal server error"),
             status_code=500

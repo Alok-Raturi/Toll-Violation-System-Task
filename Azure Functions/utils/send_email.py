@@ -2,11 +2,11 @@ from azure.communication.email import EmailClient
 
 def send_email(email,subject,body):
     try:
-        connection_string = "endpoint=https://toll-communication-service-for-email.unitedstates.communication.azure.com/;accesskey=5oK6ySgredGIxn7SdxIHKBfeg4gNzrj23iAq3Ntc0P7oMf1BDlkyJQQJ99ALACULyCptxpY3AAAAAZCSeJxb"
+        connection_string = "endpoint=https://communication-service-for-toll.unitedstates.communication.azure.com/;accesskey=ENJ48K6twmU2MZmxeVf5u65viQg82qSKahBcegYiwKaFu861DCc8JQQJ99ALACULyCptxpY3AAAAAZCSFST3"
         client = EmailClient.from_connection_string(connection_string)
 
         message = {
-            "senderAddress": "DoNotReply@da4951cc-4acd-446c-b9a6-faf9d6e53785.azurecomm.net",
+            "senderAddress": "DoNotReply@c3a20657-8e72-4349-a98c-be7b948ea113.azurecomm.net",
             "recipients": {
                 "to": [{"address": f"{email}"}]
             },
