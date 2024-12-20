@@ -1,6 +1,7 @@
 from utils.db_connection import client
 from azure.cosmos import  exceptions
 import datetime
+import logging
 
 
 DATABASE_NAME = "Toll-Violation-Detection-System-DB"
@@ -26,7 +27,7 @@ def update_fastag_balance(tag_id, vehicle_id, updated_balance):
             patch_operations = operations,
             partition_key = vehicle_id
         )
-
+        logging.warn("Fastag balance updated")
     # except (Exception,exceptions.CosmosHttpResponseError) as e:
     #     raise Exception("Internal server error")
     
@@ -49,18 +50,9 @@ def create_transaction(tag_id, type, amount, description):
                 "description" : description
             }, enable_automatic_id_generation=True)
 
-            # return HttpResponse(
-            #     json.dumps("Transaction Created"),
-            #     status_code = 200
-            # )
-            
-
+            return True
         else:
-            # return HttpResponse(
-            #     json.dumps("Invalid transaction type"),
-            #     status_code=404
-            # )
-            pass
+            return False
 
     # except (Exception,exceptions.CosmosHttpResponseError) as e:
     #     return func.HttpResponse(

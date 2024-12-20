@@ -82,7 +82,7 @@ def get_tag_id_from_vehicle_id(database, vehicle_id):
         ],
         enable_cross_partition_query=True
     ))
-    # logging.warn(items)
+    logging.warn(items)
     if items[0]['tagId'] == '':
         return ''
     else:
@@ -228,7 +228,7 @@ def get_balance(req: func.HttpRequest) -> func.HttpResponse:
 
 # Settle due date passed challans, and blacklist fastag if low balance (Change tag status and balance, update transaction table)
 @toll_trigger.route(route="toll/settle-overdue-challans/{vehicleId}", methods=["POST"])
-def settle_overdue_challans(req: func.HttpRequest) -> func.HttpResponse:
+def settle_overdue_challans_trigger(req: func.HttpRequest) -> func.HttpResponse:
     try:
         vehicle_id = req.route_params.get('vehicleId')
         body = json.loads(req.get_body().decode('utf-8'))
@@ -247,7 +247,7 @@ def settle_overdue_challans(req: func.HttpRequest) -> func.HttpResponse:
                 status_code=401
             )
 
-        # logging.warn('Token validated')
+        logging.warn('Token validated')
         database = client.get_database_client(DATABASE_NAME)
         if not validate_vehicle_id(database, vehicle_id):
             return func.HttpResponse(
@@ -255,16 +255,17 @@ def settle_overdue_challans(req: func.HttpRequest) -> func.HttpResponse:
                 status_code=404
             )
             
-        # logging.warn('Vehicle validated')
+        logging.warn('Vehicle validated')
         tag_id = get_tag_id_from_vehicle_id(database, vehicle_id)
 
+        # logging.warn("Tag id fetched")
         if tag_id == '':
             return func.HttpResponse(
                 json.dumps("No Fastag issued for the vehicle. Issue a Fastag first" ),
                 status_code=404
             )
 
-        # logging.warn(tag_id)
+        logging.warn("Tag id fetched")
         fastag_container = database.get_container_client(FASTAG_CONTAINER)
         query = "SELECT c.balance FROM c WHERE c.id = @tagId"
         items = list(fastag_container.query_items(
@@ -280,8 +281,10 @@ def settle_overdue_challans(req: func.HttpRequest) -> func.HttpResponse:
                 json.dumps("Invalid Fastag Id"),
                 status_code=404
             ) 
+        logging.warn(items)
+        logging.warn("Remaining Balance Fetched")
 
-        remaining_balance = int(items[0]['balance'])   # Fetched remaining balance
+        remaining_balance = items[0]['balance']   # Fetched remaining balance
         logging.warn(remaining_balance)
 
         # Fetching overdue challans
