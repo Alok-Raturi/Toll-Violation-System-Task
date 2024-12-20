@@ -1,0 +1,43 @@
+<div class="fastag-dashboard">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <h1 class="heading">Fastag Dashboard</h1>
+  </div>
+
+  <!-- Main Content -->
+  <div class="dashboard-content">
+    <!-- Fastag Cards Grid -->
+    <section class="fastag-cards">
+      <h2 class="section-heading">Your Active Fastags</h2>
+      <div class="cards-grid">
+        @for (tag of fastTrackReturn; track $index) {
+          <div class="fastag-card" (click)="onHistory(tag['id'])">
+            <div class="card-header">
+              <span class="tag-label">Tag ID</span>
+              <span class="tag-id">{{ tag["id"] }}</span>
+            </div>
+            <div class="card-body">
+              <div class="info-row">
+                <span class="label">Vehicle ID</span>
+                <span class="value">{{ tag["vehicleId"] }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Balance</span>
+                <span class="value balance">₹{{ tag["balance"] }}</span>
+              </div>
+              <div class="info-row">
+                <span class="label">Status</span>
+                <span class="value status-badge" [class]="tag['status'].toLowerCase()">
+                  {{ tag["status"] }}
+                </span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Redesigned Recharge Section -->
+
+  </div>
+</div>

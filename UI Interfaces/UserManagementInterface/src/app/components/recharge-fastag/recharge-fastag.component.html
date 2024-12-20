@@ -1,0 +1,54 @@
+<div class="recharge-outer-container">
+<section class="recharge-section">
+  <h2 class="section-heading">Quick Recharge</h2>
+  <div class="recharge-container">
+    <!-- Fastag Selection Cards -->
+    <div class="recharge-cards">
+      @for (tag of fastTrackReturn; track $index) {
+        <div
+          class="recharge-card"
+          [class.selected]="rechargeForm.get('tag')?.value === tag['id']"
+          (click)="rechargeForm.get('tag')?.setValue(tag['id'])"
+        >
+          <div class="recharge-card-content">
+            <div class="vehicle-info">
+              <span class="vehicle-id">{{ tag["vehicleId"] }}</span>
+              <span class="tag-number">{{ tag["id"] }}</span>
+            </div>
+            <div class="current-balance">
+              <span class="balance-label">Current Balance</span>
+              <span class="balance-amount">₹{{ tag["balance"] }}</span>
+            </div>
+          </div>
+          <div class="selection-indicator"></div>
+        </div>
+      }
+    </div>
+
+    <!-- Amount Selection -->
+    <form [formGroup]="rechargeForm" (submit)="onRecharge()" class="recharge-form">
+      <div class="amount-section">
+        <div class="quick-amounts">
+          <button type="button" class="amount-preset" (click)="setAmount(100)">₹100</button>
+          <button type="button" class="amount-preset" (click)="setAmount(200)">₹200</button>
+          <button type="button" class="amount-preset" (click)="setAmount(500)">₹500</button>
+          <button type="button" class="amount-preset" (click)="setAmount(1000)">₹1000</button>
+        </div>
+        <div class="custom-amount">
+          <label for="amount">Custom Amount</label>
+          <div class="amount-input-group">
+            <span class="currency-symbol">₹</span>
+            <input
+              id="amount"
+              type="number"
+              formControlName="amount"
+              placeholder="Enter amount"
+            />
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="recharge-button" (click)="rechargeFastage()">Proceed to Recharge</button>
+    </form>
+  </div>
+</section>
+</div>

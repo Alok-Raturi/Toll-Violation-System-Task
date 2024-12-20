@@ -1,0 +1,113 @@
+/* Container styles */
+.transaction-history {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+/* Heading styles */
+.transaction-heading {
+  color: #2d3748;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0.75rem;
+}
+
+/* Table styles */
+.transaction-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 1.5rem;
+}
+
+.transaction-table th {
+  background-color: #f7fafc;
+  color: #4a5568;
+  font-weight: 600;
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 2px solid #e2e8f0;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+}
+
+.transaction-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #edf2f7;
+  color: #4a5568;
+  font-size: 0.95rem;
+}
+
+/* Transaction type specific styles */
+.transaction-type {
+  font-weight: 500;
+}
+
+/* Row styles for different transaction types */
+.debit {
+  background-color: #fff5f5;
+}
+
+.credit{
+  background-color: #dff4d6;
+}
+
+.debit .transaction-type {
+  color: #e53e3e;
+}
+
+tr:not(.debit) .transaction-type {
+  color: #38a169;
+
+}
+
+/* Hover effect on rows */
+.transaction-table tbody tr:hover {
+  background-color: #f7fafc;
+  transition: background-color 0.2s ease;
+}
+
+/* Tag ID styles */
+.transaction-history p {
+  color: #718096;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+/* No transactions message */
+h2.transaction-heading {
+  color: #718096;
+  text-align: center;
+  padding: 3rem 0;
+  font-size: 1.5rem;
+  background: #f7fafc;
+  border-radius: 8px;
+  margin-top: 1.5rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .transaction-history {
+      padding: 1rem;
+      margin: 1rem;
+  }
+
+  .transaction-table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+  }
+
+  .transaction-table th,
+  .transaction-table td {
+      padding: 0.75rem;
+  }
+}

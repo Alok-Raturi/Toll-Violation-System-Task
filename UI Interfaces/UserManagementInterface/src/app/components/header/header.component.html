@@ -1,0 +1,14 @@
+<div class="header-container">
+  <p>Vehicle Management System</p>
+  @if(email){
+    <p>{{ email }}</p>
+    <div class="header-buttons">
+      <button class="logout" routerLink="/dashboard/home"
+      routerLinkActive="active">Home</button>
+    <button class="logout" routerLink="/dashboard/fastags" routerLinkActive="active">Fastags</button>
+    <button class="logout" routerLink="/dashboard/recharge" routerLinkActive="active">Recharge</button>
+
+    <button class="logout" (click)="logout()">Logout</button>
+    </div>
+  }
+</div>

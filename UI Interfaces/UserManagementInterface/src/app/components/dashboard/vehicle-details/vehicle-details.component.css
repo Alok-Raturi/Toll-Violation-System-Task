@@ -1,0 +1,149 @@
+.detail-container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  max-width: 600px;
+  margin: 2rem auto;
+  overflow: hidden;
+}
+
+/* Header Section */
+.detail-header {
+  background: linear-gradient(to right, #3b82f6, #2563eb);
+  padding: 1.5rem 2rem;
+  color: white;
+  position: relative;
+}
+
+.vehicle-label {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  opacity: 0.9;
+  margin-bottom: 0.5rem;
+}
+
+.vehicle-id {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Details Section */
+.detail-content {
+  padding: 2rem;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  margin-bottom: 1rem;
+}
+
+.detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 500;
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.detail-value {
+  color: #1e293b;
+  font-weight: 500;
+  flex-grow: 1;
+}
+
+/* Tag Status Styling */
+.tag-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.tag-status.active {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.tag-status.inactive {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Button Section */
+.detail-actions {
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.challan-button {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.875rem 1.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.challan-button:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.challan-button:active {
+  transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .detail-container {
+      margin: 1rem;
+      border-radius: 12px;
+  }
+
+  .detail-header {
+      padding: 1.25rem 1.5rem;
+  }
+
+  .detail-content {
+      padding: 1.5rem;
+  }
+
+  .detail-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+  }
+
+  .detail-label {
+      width: auto;
+  }
+
+  .detail-actions {
+      padding: 1.25rem 1.5rem;
+  }
+
+  .challan-button {
+      width: 100%;
+      justify-content: center;
+  }
+}
