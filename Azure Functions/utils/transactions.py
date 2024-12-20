@@ -1,4 +1,4 @@
-from db_connection import client
+from utils.db_connection import client
 from azure.cosmos import  exceptions
 import datetime
 
@@ -13,7 +13,7 @@ TRANSACTION_CONTAINER = "Transaction-Table"
 
     # Update balance in fastag table
 def update_fastag_balance(tag_id, vehicle_id, updated_balance):
-    try: 
+    # try: 
         database = client.get_database_client(DATABASE_NAME)
         fastag_container = database.get_container_client(FASTAG_CONTAINER)
 
@@ -27,17 +27,14 @@ def update_fastag_balance(tag_id, vehicle_id, updated_balance):
             partition_key = vehicle_id
         )
 
-    except (Exception,exceptions.CosmosHttpResponseError) as e:
-        return func.HttpResponse(
-            body=json.dumps("Internal server error"),
-            status_code=500
-        )
+    # except (Exception,exceptions.CosmosHttpResponseError) as e:
+    #     raise Exception("Internal server error")
     
 
 
     # Create new transaction in transaction table
 def create_transaction(tag_id, type, amount, description):
-    try:
+    # try:
         if type == 'debit' or type == 'credit':
             database = client.get_database_client(DATABASE_NAME)
             transaction_container = database.get_container_client(TRANSACTION_CONTAINER)
@@ -52,20 +49,21 @@ def create_transaction(tag_id, type, amount, description):
                 "description" : description
             }, enable_automatic_id_generation=True)
 
-            return HttpResponse(
-                json.dumps("Transaction Created"),
-                status_code = 200
-            )
+            # return HttpResponse(
+            #     json.dumps("Transaction Created"),
+            #     status_code = 200
+            # )
             
 
         else:
-            return HttpResponse(
-                json.dumps("Invalid transaction type"),
-                status_code=404
-            )
+            # return HttpResponse(
+            #     json.dumps("Invalid transaction type"),
+            #     status_code=404
+            # )
+            pass
 
-    except (Exception,exceptions.CosmosHttpResponseError) as e:
-        return func.HttpResponse(
-            body=json.dumps("Internal server error"),
-            status_code=500
-        )
+    # except (Exception,exceptions.CosmosHttpResponseError) as e:
+    #     return func.HttpResponse(
+    #         body=json.dumps("Internal server error"),
+    #         status_code=500
+    #     )

@@ -37,12 +37,12 @@ def validate_token(req: func.HttpRequest) -> bool:
     token = req.headers.get('Authorization')
     if token.startswith("Bearer "):
         token = token.split(" ")[1]
-    logging.warn(token)
+    # logging.warn(token)
     return toll_middleware(token)
 
 
 # Validate Vehicle id
-def validate_vehicle_id(database: DatabaseProxy, vehicle_id: str) -> bool:
+def validate_vehicle_id(database, vehicle_id) -> bool:
     vehicle_container = database.get_container_client(VEHICLE_CONTAINER)
     query = "SELECT * FROM c WHERE c.id = @vehicleId"
     items = list(vehicle_container.query_items(
@@ -74,7 +74,7 @@ def blacklist_fastag(database, tag_id, vehicle_id):
 def get_tag_id_from_vehicle_id(database, vehicle_id):
     vehicle_container = database.get_container_client(VEHICLE_CONTAINER)
 
-    query = "SELECT tagId FROM c WHERE c.vehicleId = @vehicleId"
+    query = "SELECT c.tagId FROM c WHERE c.id = @vehicleId"
     items = list(vehicle_container.query_items(
         query=query,
         parameters=[
@@ -82,14 +82,15 @@ def get_tag_id_from_vehicle_id(database, vehicle_id):
         ],
         enable_cross_partition_query=True
     ))
-    if items[0] == '':
+    # logging.warn(items)
+    if items[0]['tagId'] == '':
         return ''
     else:
-        return items[0]    
+        return items[0]['tagId']    
 
 
 # Login
-@toll_trigger.route(route = "toll/login", auth_level = func.AuthLevel.ANONYMOUS, methods = ["POST"])
+@toll_trigger.route(route = "toll/login", methods = ["POST"])
 def toll_login(req: func.HttpRequest) -> func.HttpResponse:
     try:
         body = json.loads(req.get_body().decode('utf-8'))
@@ -140,7 +141,7 @@ def toll_login(req: func.HttpRequest) -> func.HttpResponse:
 
 
 # View Challans by vehicle id
-@toll_trigger.route(route="toll/get-challan/{vehicleId}", auth_level=func.AuthLevel.ANONYMOUS, methods=["GET"])
+@toll_trigger.route(route="toll/get-challan/{vehicleId}", methods=["GET"])
 def get_challan(req: func.HttpRequest) -> func.HttpResponse:
     try:
         vehicle_id = req.route_params.get('vehicleId')
@@ -186,7 +187,7 @@ def get_challan(req: func.HttpRequest) -> func.HttpResponse:
 
 
 # View fastag balance by tagid
-@toll_trigger.route(route="toll/get-balance/{tagId}", auth_level=AuthLevel.ANONYMOUS, methods=["GET"])
+@toll_trigger.route(route="toll/get-balance/{tagId}", methods=["GET"])
 def get_balance(req: func.HttpRequest) -> func.HttpResponse:
     try:
         tag_id = req.route_params.get('tagId')
@@ -199,7 +200,7 @@ def get_balance(req: func.HttpRequest) -> func.HttpResponse:
         database = client.get_database_client(DATABASE_NAME)
         fastag_container = database.get_container_client(FASTAG_CONTAINER)
 
-        query = "SELECT balance FROM c WHERE c.id = @tagId"
+        query = "SELECT c.balance FROM c WHERE c.id = @tagId"
         items = list(fastag_container.query_items(
             query=query,
             parameters=[
@@ -211,11 +212,11 @@ def get_balance(req: func.HttpRequest) -> func.HttpResponse:
         if(len(items)==0):
             return func.HttpResponse(
                 json.dumps("Invalid Fastag Id"),
-                status_code=500
+                status_code=404
             )
 
         return func.HttpResponse(
-            json.dumps({"Remaining balance" : items[0]}),
+            json.dumps(items[0]),
             status_code=200
         )
     except (Exception,exceptions.CosmosHttpResponseError) as e:
@@ -226,7 +227,7 @@ def get_balance(req: func.HttpRequest) -> func.HttpResponse:
 
 
 # Settle due date passed challans, and blacklist fastag if low balance (Change tag status and balance, update transaction table)
-@toll_trigger.route(route="toll/settle-overdue-challans/{vehicleId}", auth_level=AuthLevel.ANONYMOUS, methods=["POST"])
+@toll_trigger.route(route="toll/settle-overdue-challans/{vehicleId}", methods=["POST"])
 def settle_overdue_challans(req: func.HttpRequest) -> func.HttpResponse:
     try:
         vehicle_id = req.route_params.get('vehicleId')
@@ -238,6 +239,7 @@ def settle_overdue_challans(req: func.HttpRequest) -> func.HttpResponse:
                 json.dumps("Passage amount is not valid."),
                 status_code=404
             )    
+        passage_amount = int(passage_amount)
 
         if not validate_token(req):
             return func.HttpResponse(
@@ -245,22 +247,26 @@ def settle_overdue_challans(req: func.HttpRequest) -> func.HttpResponse:
                 status_code=401
             )
 
+        # logging.warn('Token validated')
+        database = client.get_database_client(DATABASE_NAME)
         if not validate_vehicle_id(database, vehicle_id):
             return func.HttpResponse(
                 json.dumps("Invalid vehicle Id"),
                 status_code=404
             )
             
+        # logging.warn('Vehicle validated')
         tag_id = get_tag_id_from_vehicle_id(database, vehicle_id)
+
         if tag_id == '':
             return func.HttpResponse(
                 json.dumps("No Fastag issued for the vehicle. Issue a Fastag first" ),
                 status_code=404
             )
 
-        database = client.get_database_client(DATABASE_NAME)
+        # logging.warn(tag_id)
         fastag_container = database.get_container_client(FASTAG_CONTAINER)
-        query = "SELECT balance FROM c WHERE c.id = @tagId"
+        query = "SELECT c.balance FROM c WHERE c.id = @tagId"
         items = list(fastag_container.query_items(
             query=query,
             parameters=[
@@ -275,7 +281,8 @@ def settle_overdue_challans(req: func.HttpRequest) -> func.HttpResponse:
                 status_code=404
             ) 
 
-        remaining_balance = int(items[0])   # Fetched remaining balance
+        remaining_balance = int(items[0]['balance'])   # Fetched remaining balance
+        logging.warn(remaining_balance)
 
         # Fetching overdue challans
         overdue_challans = fetch_overdue_challan(vehicle_id)
@@ -300,9 +307,11 @@ def settle_overdue_challans(req: func.HttpRequest) -> func.HttpResponse:
                 )
 
         overdue_challans_amount = total_overdue_challans(overdue_challans) 
+        logging.warn(overdue_challans_amount)
 
         if remaining_balance >= overdue_challans_amount + passage_amount:
             # Deduct total amount, change challans status and pass
+            logging.warn("case 1")
 
             if not settle_overdue_challans(overdue_challans, vehicle_id, tag_id, remaining_balance - overdue_challans_amount):
                 return func.HttpResponse(
@@ -318,6 +327,7 @@ def settle_overdue_challans(req: func.HttpRequest) -> func.HttpResponse:
 
         elif remaining_balance >= passage_amount:
             # Deduct passage amount, block fastag and pass
+            logging.warn("case 2")
             create_transaction(tag_id= tag_id, type= 'debit', amount= passage_amount, description= 'Toll Plaza Passage')
             update_fastag_balance(tag_id= tag_id, vehicle_id= vehicle_id, updated_balance= remaining_balance - passage_amount)    
 
@@ -328,13 +338,15 @@ def settle_overdue_challans(req: func.HttpRequest) -> func.HttpResponse:
             )
         else: 
             # Block fastag and don't pass
+            logging.warn("case 3")
             blacklist_fastag(database=database, tag_id=tag_id, vehicle_id=vehicle_id)
             return func.HttpResponse(
                 json.dumps("Passage Blocked!!! and Fastag blacklisted as insufficient balance for passage and overdue challans"),
                 status_code= 404
             )
-    except:
-        return HttpResponse(
+    except (Exception,exceptions.CosmosHttpResponseError) as e:
+        logging.warning(e)
+        return func.HttpResponse(
             json.dumps("Internal server error"),
             status_code=500
         )    

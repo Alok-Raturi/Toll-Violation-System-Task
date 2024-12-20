@@ -1,8 +1,9 @@
-from db_connection import client
+from utils.db_connection import client
 from azure.cosmos import  exceptions
-from transaction import create_transaction, update_fastag_balance
+from utils.transactions import create_transaction, update_fastag_balance
 import datetime
 import time
+import logging
 
 
 DATABASE_NAME = "Toll-Violation-Detection-System-DB"
@@ -41,6 +42,7 @@ def settle_overdue_challans(challans, vehicle_id, tag_id, updated_balance):
 
 def total_overdue_challans(challans):
     total = 0
+
     for challan in challans:
         total = total + challan["amount"]
     return total    
@@ -50,22 +52,24 @@ def fetch_overdue_challan(vehicle_id):
     try:
         database = client.get_database_client(DATABASE_NAME)
         challan_container = database.get_container_client(CHALLAN_CONTAINER)
-        current_time = int(time.time())
+        current_time = time.time()
+        logging.warn(current_time)
 
-        query = '''SELECT id, amount 
+        query = '''SELECT c.id, c.amount 
                    FROM c 
                    WHERE c.vehicleId = @vehicleId 
                    AND c.status = 'unsettled' 
                    AND @currentTime > c.due_time  '''
 
-        items = challan_container.query_items(
+        items = list(challan_container.query_items(
             query=query,
             parameters=[
                 {"name": "@vehicleId", "value": vehicle_id},
                 {"name": "@currentTime", "value": current_time}
             ],
             enable_cross_partition_query=True
-        )
+        ))
+        logging.warn(items)
         return items
     except:
         return False
