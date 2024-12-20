@@ -1,16 +1,15 @@
 
 from jose import JWTError, jwt
 import time
+import os
 
-SECRET_KEY = "mysecretkey"
 ALGORITHM = "RS256"
 
 def encode_token(data:dict):
     try:
         data = data.copy() 
         data.update({'iat':time.time(),'exp': time.time()+3600})
-        with open('private_key.pem', 'r') as file:
-            private_key = file.read()
+        private_key = os.getenv("PRIVATE_KEY")
 
         return jwt.encode(data, private_key, algorithm=ALGORITHM)
     except JWTError:
@@ -18,8 +17,7 @@ def encode_token(data:dict):
     
 def decode_token(token:str):
     try:
-        with open('public_key.pem', 'r') as file:
-            public_key = file.read()
+        public_key = os.getenv("PUBLIC_KEY")
         return jwt.decode(token, public_key, algorithms=[ALGORITHM])
     except JWTError:
         raise JWTError("Error decoding token")

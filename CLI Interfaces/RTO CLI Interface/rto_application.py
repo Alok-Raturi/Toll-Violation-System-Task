@@ -11,7 +11,7 @@ PRESS 4 FOR ISSUING A FASTAG
 PRESS 5 FOR EXIT
 """
 
-BASE_URL = "http://localhost:7071/api/rto/"
+BASE_URL = "https://raturifunctionapp.azurewebsites.net/api/rto/"
 
 PASSWORD_REGEX = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,20}$"
 
@@ -24,11 +24,6 @@ Your password:\n
     - should not contain any whitespace characters\n
     - should have minimum length of 8 characters and max length of 20 characters
 """
-
-# create-toll-plaza-man
-# create-police-man
-# create-vehicle
-# create-fastag
 
 def print_api_results(response):
     if response.get('status') == 200 or response.get('status') == 201:
@@ -108,8 +103,13 @@ if __name__ =="__main__":
             name = input("Enter the name: ")
             email = input("Enter the email: ")
             password = input("Enter the password: ")
-            if not ev.validate_email(email):
-                print("Invalid email entered")
+            try:
+                ev.validate_email(email)
+            except ev.EmailNotValidError:
+                print("Email is not valid...")
+                print("Retry")
+                continue
+
 
             if not re.match(PASSWORD_REGEX, password):
                 print("Your password does not meet the following constraints")

@@ -11,19 +11,19 @@ variable "region" {
 }
 
 
-variable "resource_group_name" {
+variable "database_resource_group" {
   description = "The name of the resource group in which the resources will be created."
   default     = "Toll-Violation-Detection-System-Alok-Raturi"
   type = string
 }
 
-variable "resource_group_name_2" {
+variable "function_app_resource_group" {
   description = "The name of the resource group in which the resources will be created."
   default     = "Function-App-RG-Alok-Raturi"
   type = string
 }
 
-variable "resource_group_name_3" {
+variable "communication_service_resource_group" {
   description = "The name of the resource group in which the resources will be created."
   default     = "Communication-Service-RG-Alok-Raturi"
   type = string
@@ -33,7 +33,7 @@ variable "resource_group_name_3" {
 # DB Variables
 variable "cosmosdb_account_name" {
   description = "The name of the Cosmos DB account."
-  default     = "tolldbmsalokraturi"
+  default     = "tollviolationdbmsraturi"
   type = string
 }
 
@@ -78,7 +78,7 @@ variable "data_location_for_communication_service" {
 # Function App Variables
 variable "function_app_log_storage_name"{
     description = "The name of the storage account for function app logs."
-    default     = "alokraturi09storage"
+    default     = "raturi012953storage"
     type = string
 }
 
@@ -96,7 +96,7 @@ variable "function_app_application_insights_name"{
 
 variable "function_app_container"{
     description = "The name of the function app container."
-    default = "alokraturifunctionapp"
+    default = "raturifunctionapp"
     type = string
 }
 
@@ -106,4 +106,11 @@ variable "python_version" {
     type = string  
 }
 
+# PUBLIC and Private key
+variable "PRIVATE_KEY" {
+  type = string
+}
 
+variable "PUBLIC_KEY"{
+  type = string
+}

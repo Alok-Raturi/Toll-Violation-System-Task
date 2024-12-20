@@ -278,6 +278,11 @@ def recharge_fastags(req: func.HttpRequest)-> func.HttpResponse:
                 json.dumps("You are not authorized to recharge this fastag"),
                 status_code=401
             )
+        if items[0]['status'] != 'valid':
+            return func.HttpResponse(
+                json.dumps("Your card is blacklisted. Please visit nearby RTO office and settle your dues."),
+                status_code=404
+            )
         items[0]['balance'] = int(items[0]['balance']) + amount
 
         fastag_container.upsert_item(items[0])
@@ -438,6 +443,12 @@ def pay_single_challan(req:func.HttpRequest)-> func.HttpResponse:
                 json.dumps("No fastag associated with the vehicle."),
                 status_code=404
             )
+        
+        if fastag_info[0]['status']!='valid':
+            return func.HttpResponse(
+                json.dumps("Your fastag is blacklisted. Visit nearby RTO office to settle your dues."),
+                status_code=404
+            )
 
         fastag_balance = int(fastag_info[0]['balance'])
 
@@ -505,19 +516,24 @@ def pay_all_challan(req:func.HttpRequest)-> func.HttpResponse:
                 status_code=404
             )
 
-        query = 'SELECT VALUE SUM(c.amount) FROM c WHERE c.vehicleId = "{0}" and c.status = "unsettled" '.format(vehicleId)
-        items = list(challan_container.query_items(
+        query = 'SELECT * FROM c WHERE c.vehicleId = "{0}" and c.status = "unsettled" '.format(vehicleId)
+        challan_items = list(challan_container.query_items(
             query=query,
             enable_cross_partition_query=True
         ))
-        if len(items) == 0:
+        logging.error(challan_items)
+
+        if len(challan_items) == 0:
             return func.HttpResponse(
                 json.dumps("No Challans found"),
                 status_code=200
             )
     
+        amount = 0
+        for item in challan_items:
+            amount+= int(item['amount'])
 
-        amount = int(items[0])
+        logging.error(amount)
 
         query = "SELECT * FROM c WHERE c.vehicleId = '{0}'".format(vehicleId)
         items = list(fastag_container.query_items(
@@ -528,25 +544,30 @@ def pay_all_challan(req:func.HttpRequest)-> func.HttpResponse:
         if len(items) == 0:
             return func.HttpResponse(
                 json.dumps("No Fastag found"),
-                status_code=200
-            )
-    
-        if int(items[0]['balance']) < amount:
-            return func.HttpResponse(
-                json.dumps("Insufficient Balance"),
-                status_code=200
+                status_code=404
             )
         
-        items[0]['balance'] = str(int(items[0]['balance']) - amount)
+        if items[0]['status']!='valid':
+            return func.HttpResponse(
+                json.dumps("Your fastag is blacklisted. Visit nearby RTO office to settle your dues."),
+                status_code=404
+            )
+    
+        logging.warning(items[0]['balance'])
+        logging.warning(amount)
+
+        if int(items[0]['balance']) < amount:
+            logging.warning(items[0]['balance'])
+            logging.warning(amount)
+            return func.HttpResponse(
+                json.dumps("Insufficient Balance"),
+                status_code=404
+            )
+        
+        items[0]['balance'] = int(items[0]['balance']) - amount
         fastag_container.upsert_item(items[0])
 
-        query = 'SELECT * FROM c WHERE c.vehicleId = "{0}" and c.status = "unsettled" '.format(vehicleId)
-        items = list(challan_container.query_items(
-            query=query,
-            enable_cross_partition_query=True
-        ))
-
-        for item in items:
+        for item in challan_items:
             item['status'] = "settled"
             challan_container.upsert_item(item)
             timestamp = str(datetime.datetime.now())
@@ -570,12 +591,14 @@ def pay_all_challan(req:func.HttpRequest)-> func.HttpResponse:
             status_code=200
         )
 
-    except KeyError:
+    except KeyError as e:
+        logging.warning(e)
         return func.HttpResponse(
             json.dumps("Invalid token"),
             status_code=404
         )
     except  (exceptions.CosmosHttpResponseError,JWTError, Exception) as e:
+        logging.warning(e)
         return func.HttpResponse(
             json.dumps("Internal Server Error"),
             status_code=500

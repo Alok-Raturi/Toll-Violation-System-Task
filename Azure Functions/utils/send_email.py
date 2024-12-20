@@ -1,12 +1,13 @@
 from azure.communication.email import EmailClient
+import os
 
 def send_email(email,subject,body):
     try:
-        connection_string = "endpoint=https://communication-service-for-toll.unitedstates.communication.azure.com/;accesskey=ENJ48K6twmU2MZmxeVf5u65viQg82qSKahBcegYiwKaFu861DCc8JQQJ99ALACULyCptxpY3AAAAAZCSFST3"
+        connection_string = os.getenv("CONNECTION_STRING")
         client = EmailClient.from_connection_string(connection_string)
 
         message = {
-            "senderAddress": "DoNotReply@c3a20657-8e72-4349-a98c-be7b948ea113.azurecomm.net",
+            "senderAddress": f"DoNotReply@{os.getenv('SENDER_DOMAIN')}",
             "recipients": {
                 "to": [{"address": f"{email}"}]
             },

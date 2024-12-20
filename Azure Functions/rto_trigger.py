@@ -166,10 +166,12 @@ def create_toll_plaza_man(req: func.HttpRequest) -> func.HttpResponse:
                 status_code=404
             )
 
+        bcrypt_password = hash_password(password)
+
         user_container.create_item({
             "name": name,
             "designation": designation,
-            "password": password,
+            "password": bcrypt_password,
             "email":email
         },enable_automatic_id_generation=True)
         send_email(email,USER_CREATED_SUBJECT,USER_CREATED_BODY.format(email,password,designation))

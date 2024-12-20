@@ -1,111 +1,106 @@
-import requests
-import json
 import datetime
-
-PROMPT ="""
-PRESS 1 FOR LOGIN
-PRESS 2 FOR EXIT
-"""
+import logging
+from utils.traffic_police import Traffic_Police
+import getpass
 
 BASE_URL = "http://localhost:7071/api/police/"
 
-PROMPT_AFTER_LOGIN = """
-PRESS 1 FOR CREATING A CHALLAN
-PRESS 2 FOR VIEWING CHALLAN OF A VEHICLE 
-PRESS 3 FOR LOGOUT
-"""
+logging.basicConfig(filename='traffic_police.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-class Traffic_Police:
-    def __init__(self,email,password):
-        self.email = email
-        self.password = password
-    
-    def login(self):
-        auth_data =  json.dumps({"email":self.email,"password":self.password})
-        response = requests.post(BASE_URL + "login",data=auth_data)
-        if(response.status_code==200):
-            self.token = response.json()['access_token']
-        return {
-            "status":response.status_code,
-            "body": response.json()
-        }
-    
-    def view_vehicle_challan(self,vehicle_number):
-        response = requests.get(f"{BASE_URL}get-challan/{vehicle_number}",headers={"Authorization":self.token})
-        return {
-            "status":response.status_code,
-            "data":response.json(),
-        }
-    
-    def create_challan(self,vehicleId,amount,description,location):
-        challan_data =json.dumps({
-            "vehicleId":vehicleId,
-            "amount":amount,
-            "description":description,
-            "location":location
-        })
-        response = requests.post(BASE_URL + "create-challan",data=challan_data,headers={"Authorization":self.token})
-        return {
-            "status":response.status_code,
-            "data":response.json(),
-        }
+def show_menu(menu_options):
+    """Display menu options and get user input."""
+    for option, description in menu_options.items():
+        print(f"Press {option} for {description}")
+    return input("Enter your choice: ")
 
-    def logout(self):
-        self.email=None
-        self.password= None
-        self.token=None
-        
+def validate_amount(amount):
+    """Validate if the amount entered is a valid number."""
+    try:
+        if amount.isnumeric():
+            print("Invalid Amount. Please enter a valid amount.")
+            return None
+        amount = float(amount)
+        if amount <= 0:
+            print("Amount must be greater than zero.")
+            return None
+        return amount
+    except ValueError:
+        print("Invalid amount. Please enter a valid number.")
+        return None
+
 if __name__ == '__main__':
-    print(PROMPT)
+    print("Press 1 for Login\nPress 2 for Exit")
     choice = input("Enter your choice: ")
-    if choice == '1':
-        print("---------------- LOGIN ----------------")
-        username = input("Enter email: ").strip()
-        password = input("Enter password: ").strip()
-        traffic_police = Traffic_Police(username,password)
-        login = traffic_police.login()
 
-        if login['status']==200:
-            print("-----------------  Login Successful ------------- ")
-            while(True):
-                print(PROMPT_AFTER_LOGIN)
-                choice = input("Enter your choice: ")
+    if choice == '1':
+        username = input("Enter email: ").strip()
+        password = getpass.getpass()
+        traffic_police = Traffic_Police(username, password,BASE_URL)
+        login_response = traffic_police.login()
+
+        if login_response['status'] == 200:
+            print("Login Successful")
+            while True:
+                menu = {
+                    '1': 'Creating a Challan',
+                    '2': 'Viewing Challan of a Vehicle',
+                    '3': 'Logout'
+                }
+                choice = show_menu(menu)
+
                 if choice == '1':
-                    print("------------- Enter Details to create challan ---------------")
-                    vehicleId = input("Enter vehicle number: ")
+                    vehicle_id = input("Enter vehicle number: ")
                     amount = input("Enter amount: ")
+                    amount = validate_amount(amount)
+                    if amount is None:
+                        continue
                     description = input("Enter description: ")
                     location = input("Enter location: ")
-                    response = traffic_police.create_challan(vehicleId,amount,description,location)
-                    if response['status']==200 or response['status']==201:
-                        print(response['data'])
+                    response = traffic_police.create_challan(vehicle_id, amount, description, location)
+                    if response['status'] in [200, 201]:
+                        print("Challan created successfully!")
                     else:
-                        print(response['data'])
+                        print(f"Error: {response['data']}")
 
                 elif choice == '2':
-                    vehicleId = input("Enter vehicle number: ")
-                    response = traffic_police.view_vehicle_challan(vehicleId)
-                    if response['status']==200:
-                        challan_list = list(response['data'])
+                    vehicle_id = input("Enter vehicle number: ")
+                    response = traffic_police.view_vehicle_challan(vehicle_id)
+                    if response['status'] == 200:
+                        challan_list = response['data']
                         print("---------------------- All Challans ------------------")
-                        print("ID\t\t\t\t\tAmount\tLocation\t\tStatus\t\tDescription\tDate\t\tDue Time")
+                        print('''
+                              ID\t\t\t\t
+                              Amount\t
+                              Location\t\t
+                              Status\t\t
+                              Description\t
+                              Date\t\t
+                              Due Time''')
                         for challan in challan_list:
-                            print(f"{challan['id']}\t{challan['amount']}\t{challan['location']}\t{challan['status']}\t{challan['description']}\t{challan['date']}\t{datetime.datetime.fromtimestamp(challan['due_time']).strftime('%Y-%m-%d %H:%M:%S')}")
+                            due_time = datetime.datetime.fromtimestamp(challan['due_time'])
+                            formatted_due_time = due_time.strftime('%Y-%m-%d %H:%M:%S')
+                            print(f'''
+                                {challan['id']}\t
+                                {challan['amount']}\t
+                                {challan['location']}\t
+                                {challan['status']}\t
+                                {challan['description']}\t
+                                {challan['date']}\t
+                                {formatted_due_time}''')
                     else:
-                        print(response['data'])
+                        print(f"Error: {response['data']}")
 
                 elif choice == '3':
-                    print("Logging you out.....")
+                    print("Logging you out...")
                     traffic_police.logout()
-                    del traffic_police
-                    print("------------ Successfully logged you out ----------------")
                     break
                 else:
-                    print("Invalid choice. Try again...")
+                    print("Invalid choice. Please try again.")
         else:
-            print(login['body'])
+            print(login_response['body'])
 
     elif choice == '2':
-        print("Exit")
+        print("Exiting...")
     else:
         print("Invalid choice. Exiting...")
+

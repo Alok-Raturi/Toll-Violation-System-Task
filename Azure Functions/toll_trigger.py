@@ -6,10 +6,8 @@ from utils.transactions import update_fastag_balance, create_transaction
 from utils.challans import settle_overdue_challans, fetch_overdue_challan, total_overdue_challans
 from jose import JWTError
 from azure.cosmos import exceptions
-import uuid
-import datetime
-import time
 import logging
+from utils.password import check_password
 
 toll_trigger = func.Blueprint()
 
@@ -100,34 +98,29 @@ def toll_login(req: func.HttpRequest) -> func.HttpResponse:
         email = body['email']
         password = body['password']
 
-        query = "SELECT * FROM c WHERE c.email = '{0}' and c.password = '{1}' and c.designation = 'toll'".format(email, password)
+        query = "SELECT * FROM c WHERE c.email = '{0}' and c.designation = 'toll'".format(email, password)
         items = list(user_container.query_items(
             query = query,
             enable_cross_partition_query = True
         ))
 
-        if len(items) == 0:
+        if len(items) == 0 or check_password(password,items[0]['password']):
             return func.HttpResponse(
                 json.dumps("Invalid Email or Password"),
                 status_code = 404
             )
-        else:    
-            if(items[0]['designation'] != "toll"):
-                return func.HttpResponse(
-                    json.dumps("You are not a toll plaza person"),
-                    status_code = 404
-                )
-            token = encode_token({
-                "email" : email,
-                "designation" : items[0]['designation'],  # toll
-                "id": items[0]['id']
-            })    
-            return func.HttpResponse(
-                json.dumps({
-                    "access_token" : token
-                }),
-                status_code = 200
-            )
+
+        token = encode_token({
+            "email" : email,
+            "designation" : items[0]['designation'], 
+            "id": items[0]['id']
+        })    
+        return func.HttpResponse(
+            json.dumps({
+                "access_token" : token
+            }),
+            status_code = 200
+        )
     except KeyError:
         return func.HttpResponse(
             json.dumps("Invalid body"),
@@ -144,12 +137,13 @@ def toll_login(req: func.HttpRequest) -> func.HttpResponse:
 @toll_trigger.route(route="toll/get-challan/{vehicleId}", methods=["GET"])
 def get_challan(req: func.HttpRequest) -> func.HttpResponse:
     try:
-        vehicle_id = req.route_params.get('vehicleId')
         if not validate_token(req):
             return func.HttpResponse(
                 json.dumps("Unauthorized"),
                 status_code=401
             )
+        
+        vehicle_id = req.route_params.get('vehicleId')
 
         database = client.get_database_client(DATABASE_NAME)
         challan_container = database.get_container_client(CHALLAN_CONTAINER)
@@ -190,12 +184,12 @@ def get_challan(req: func.HttpRequest) -> func.HttpResponse:
 @toll_trigger.route(route="toll/get-balance/{tagId}", methods=["GET"])
 def get_balance(req: func.HttpRequest) -> func.HttpResponse:
     try:
-        tag_id = req.route_params.get('tagId')
         if not validate_token(req):
             return func.HttpResponse(
                 json.dumps("Unauthorized"),
                 status_code=401
             )
+        tag_id = req.route_params.get('tagId')
 
         database = client.get_database_client(DATABASE_NAME)
         fastag_container = database.get_container_client(FASTAG_CONTAINER)
