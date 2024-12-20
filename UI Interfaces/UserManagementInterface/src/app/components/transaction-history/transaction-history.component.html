@@ -1,0 +1,40 @@
+<div class="transaction-history">
+  <div>
+    <h1 class="transaction-heading">Transaction History</h1>
+    <p>Tag id : {{tagid}}</p>
+  </div>
+@if (transactionHistory) {
+    <div class="transaction-details">
+      <table class="transaction-table">
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Amount</th>
+            <th>Timestamp</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (transaction of transactionHistory; track transaction.id) {
+          <tr
+            class="{{
+              transaction['type'] == 'Debit' ? 'debit' : transaction['type']
+            }}"
+          >
+            <td>{{ transaction["id"] }}</td>
+            <td class="transaction-type">{{ transaction["amount"] }}</td>
+            <td>{{ transaction["timestamp"] | date:"short" }}</td>
+            <td class="transaction-type">{{ transaction["type"] }}</td>
+            <td>{{ transaction["description"]}}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }@else {
+    <div>
+      <h2 class="transaction-heading">No Transactions for this fastag</h2>
+    </div>
+  }
+</div>

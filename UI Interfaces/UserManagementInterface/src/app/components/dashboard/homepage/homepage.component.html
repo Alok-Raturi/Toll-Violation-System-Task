@@ -1,0 +1,10 @@
+<div class="vehicle-container-dashboard">
+  <h2>Your Vehicles</h2>
+  <div class="vehicle-container">
+    @for (vehicle of vehicles; track $index) {
+    <app-vehicle-details
+      [detail]="vehicle"
+    ></app-vehicle-details>
+    }
+  </div>
+</div>

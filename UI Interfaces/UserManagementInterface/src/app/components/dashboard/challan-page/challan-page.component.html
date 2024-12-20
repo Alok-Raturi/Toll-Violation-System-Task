@@ -1,0 +1,59 @@
+<div class="challans-container">
+  @if(challanReturn.length !== 0) {
+  <div class="challans-grid">
+    @for (challan of challanReturn; track $index) {
+    <div class="challan-card">
+      <div class="challan-header">
+        <h3>Challan ID: {{ challan["id"] }}</h3>
+        <span
+          class="status-badge"
+          [class.status-unsettled]="challan.status === 'unsettled'"
+        >
+          {{ challan["status"] }}
+        </span>
+      </div>
+      <div class="challan-details">
+        <div class="detail-item">
+          <span class="label">Vehicle ID:</span>
+          <span class="value">{{ challan["vehicleId"] }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Description:</span>
+          <span class="value">{{ challan["description"] }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Location:</span>
+          <span class="value">{{ challan["location"] }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Timestamp:</span>
+          <span class="value">{{ challan["date"] }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Amount:</span>
+          <span class="value amount">₹{{ challan["amount"] }}</span>
+        </div>
+        @if (challan.status === "unsettled") {
+        <div class="detail-item">
+          <span class="label">Due Date:</span>
+          <span class="value due-date">{{
+            getDueDate(challan["due_time"]) | date : "short"
+          }}</span>
+        </div>
+        <button class="btn-pay">Pay Now</button> } @else {
+        <div class="detail-item">
+          <span class="label">Settled Date:</span>
+          <span class="value">{{ challan["settlement_date"] }}</span>
+        </div>
+        }
+      </div>
+    </div>
+    }
+  </div>
+  <div class="pay-all-container">
+    <button class="btn-pay-all">Pay All Challans</button>
+  </div>
+  } @else {
+  <div class="no-challans"><span>No Challans</span></div>
+  }
+</div>

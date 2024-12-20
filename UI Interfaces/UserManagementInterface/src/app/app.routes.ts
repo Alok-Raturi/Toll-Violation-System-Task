@@ -1,16 +1,19 @@
 import { Routes } from '@angular/router';
-import { LoginPageComponent } from './login-page/login-page.component';
-import { DashboardComponent } from './dashboard/dashboard.component';
-import { FastTrackRechargeComponent } from './fast-track-recharge/fast-track-recharge.component';
-import { VehicleDetailsComponent } from './vehicle-details/vehicle-details.component';
-import { HomepageComponent } from './dashboard/homepage/homepage.component';
-import { ChallanPageComponent } from './dashboard/challan-page/challan-page.component';
-import { isLoggedIn } from './guards/isLogin.guard';
+import { LoginPageComponent } from './components/login-page/login-page.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { FastTrackRechargeComponent } from './components/fast-track-recharge/fast-track-recharge.component';
+import { VehicleDetailsComponent } from './components/dashboard/vehicle-details/vehicle-details.component';
+import { HomepageComponent } from './components/dashboard/homepage/homepage.component';
+import { ChallanPageComponent } from './components/dashboard/challan-page/challan-page.component';
+import { isLoggedIn, isNotLoggedIn } from './guards/isLogin.guard';
+import { TransactionHistoryComponent } from './components/transaction-history/transaction-history.component';
+import { RechargeFastagComponent } from './components/recharge-fastag/recharge-fastag.component';
 
 export const routes: Routes = [
     {
         path: 'login',
-        component: LoginPageComponent
+        component: LoginPageComponent,
+        canActivate: [isNotLoggedIn],
     },
     {
         path: 'dashboard',
@@ -21,7 +24,7 @@ export const routes: Routes = [
                 path:'',
                 redirectTo: 'home',
                 pathMatch: 'full'
-                
+
             },
             {
                 path: 'home',
@@ -29,9 +32,19 @@ export const routes: Routes = [
                 canActivate: [isLoggedIn],
             },
             {
-                path: 'recharge',
+                path: 'fastags',
                 component: FastTrackRechargeComponent,
                 canActivate: [isLoggedIn],
+            },
+            {
+              path: 'recharge',
+              component: RechargeFastagComponent,
+              canActivate: [isLoggedIn],
+          },
+            {
+              path: 'transaction-history/:id',
+              component: TransactionHistoryComponent,
+              canActivate: [isLoggedIn],
             },
             {
                 path: 'challan/:id',
