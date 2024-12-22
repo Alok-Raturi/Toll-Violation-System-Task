@@ -18,7 +18,7 @@ export const routes: Routes = [
     {
         path: 'dashboard',
         component: DashboardComponent,
-        // canActivate: [isLoggedIn],
+        canActivate: [isLoggedIn],
         children:[
             {
                 path:'',
@@ -29,27 +29,27 @@ export const routes: Routes = [
             {
                 path: 'home',
                 component: HomepageComponent,
-                // canActivate: [isLoggedIn],
+                canActivate: [isLoggedIn],
             },
             {
                 path: 'fastags',
                 component: FastTrackRechargeComponent,
-                // canActivate: [isLoggedIn],
+                canActivate: [isLoggedIn],
             },
             {
               path: 'recharge',
               component: RechargeFastagComponent,
-              // canActivate: [isLoggedIn],
+              canActivate: [isLoggedIn],
           },
             {
               path: 'transaction-history/:id',
               component: TransactionHistoryComponent,
-              // canActivate: [isLoggedIn],
+              canActivate: [isLoggedIn],
             },
             {
                 path: 'challan/:id',
                 component: ChallanPageComponent,
-                // canActivate: [isLoggedIn],
+                canActivate: [isLoggedIn],
             }
         ]
 

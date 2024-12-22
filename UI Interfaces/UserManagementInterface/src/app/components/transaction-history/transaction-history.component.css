@@ -1,4 +1,3 @@
-/* Container styles */
 .transaction-history {
   max-width: 1200px;
   margin: 2rem auto;
@@ -9,7 +8,6 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
-/* Heading styles */
 .transaction-heading {
   color: #2d3748;
   margin-bottom: 1.5rem;
@@ -19,7 +17,6 @@
   padding-bottom: 0.75rem;
 }
 
-/* Table styles */
 .transaction-table {
   width: 100%;
   border-collapse: separate;
@@ -46,12 +43,10 @@
   font-size: 0.95rem;
 }
 
-/* Transaction type specific styles */
 .transaction-type {
   font-weight: 500;
 }
 
-/* Row styles for different transaction types */
 .debit {
   background-color: #fff5f5;
 }
@@ -69,20 +64,17 @@ tr:not(.debit) .transaction-type {
 
 }
 
-/* Hover effect on rows */
 .transaction-table tbody tr:hover {
   background-color: #f7fafc;
   transition: background-color 0.2s ease;
 }
 
-/* Tag ID styles */
 .transaction-history p {
   color: #718096;
   margin-bottom: 1rem;
   font-size: 0.95rem;
 }
 
-/* No transactions message */
 h2.transaction-heading {
   color: #718096;
   text-align: center;
@@ -93,7 +85,6 @@ h2.transaction-heading {
   margin-top: 1.5rem;
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
   .transaction-history {
       padding: 1rem;

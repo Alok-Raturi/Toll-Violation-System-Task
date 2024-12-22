@@ -106,7 +106,7 @@ def get_vehicles(req: func.HttpRequest)->func.HttpResponse:
         if len(items) == 0:
             return func.HttpResponse(
                 json.dumps("No Vehicles found"),
-                status_code=200
+                status_code=404
             )
         return func.HttpResponse(
             body=json.dumps(items),
@@ -166,7 +166,7 @@ def get_vehicle_challans(req: func.HttpRequest)-> func.HttpResponse:
         if len(items) == 0:
             return func.HttpResponse(
                 json.dumps("No Challans found"),
-                status_code=200
+                status_code=404
             )
         
         return func.HttpResponse(
@@ -209,7 +209,7 @@ def get_fastags(req:func.HttpRequest)-> func.HttpResponse:
         if len(items) == 0:
             return func.HttpResponse(
                 json.dumps("No Fastags found"),
-                status_code=200
+                status_code=404
             )
         return func.HttpResponse(
             json.dumps(items),
@@ -270,7 +270,7 @@ def recharge_fastags(req: func.HttpRequest)-> func.HttpResponse:
         if len(items) == 0:
             return func.HttpResponse(
                 json.dumps("Invalid Fastag"),
-                status_code=200
+                status_code=404
             )
         
         if items[0]['email'] != decoded_token['email']:
@@ -347,7 +347,7 @@ def get_transaction_history(req:func.HttpRequest)-> func.HttpResponse:
         if len(items) == 0:
             return func.HttpResponse(
                 json.dumps("Invalid Fastag"),
-                status_code=200
+                status_code=404
             )
         
         if items[0]['email'] != email:
@@ -364,7 +364,7 @@ def get_transaction_history(req:func.HttpRequest)-> func.HttpResponse:
         if len(items) == 0:
             return func.HttpResponse(
                 json.dumps("No Transactions found"),
-                status_code=200
+                status_code=404
             )
 
         return func.HttpResponse(
@@ -526,7 +526,7 @@ def pay_all_challan(req:func.HttpRequest)-> func.HttpResponse:
         if len(challan_items) == 0:
             return func.HttpResponse(
                 json.dumps("No Challans found"),
-                status_code=200
+                status_code=404
             )
     
         amount = 0
@@ -563,22 +563,22 @@ def pay_all_challan(req:func.HttpRequest)-> func.HttpResponse:
                 json.dumps("Insufficient Balance"),
                 status_code=404
             )
-        
+        tagId = items[0]['id']
         items[0]['balance'] = int(items[0]['balance']) - amount
         fastag_container.upsert_item(items[0])
 
         for item in challan_items:
             item['status'] = "settled"
+            item['settlement_date'] = str(datetime.datetime.now())
             challan_container.upsert_item(item)
             timestamp = str(datetime.datetime.now())
-            tid = item['id']
             amount = item['amount']
             type_of_transaction ="debit"
             description = "Challan Payment"
 
             transaction_container.create_item({
                 "timestamp":timestamp,
-                "tagId":tid,
+                "tagId":tagId,
                 "amount":amount,
                 "type":type_of_transaction,
                 "description":description

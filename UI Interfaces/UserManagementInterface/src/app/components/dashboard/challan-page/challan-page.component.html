@@ -1,10 +1,13 @@
 <div class="challans-container">
+  <div class="dashboard-header">
+    <h1 class="heading">Your Challans</h1>
+  </div>
   @if(challanReturn.length !== 0) {
   <div class="challans-grid">
     @for (challan of challanReturn; track $index) {
     <div class="challan-card">
       <div class="challan-header">
-        <h3>Challan ID: {{ challan["id"] }}</h3>
+        <h3>{{ challan["id"] }}</h3>
         <span
           class="status-badge"
           [class.status-unsettled]="challan.status === 'unsettled'"
@@ -40,7 +43,7 @@
             getDueDate(challan["due_time"]) | date : "short"
           }}</span>
         </div>
-        <button class="btn-pay">Pay Now</button> } @else {
+        <button class="btn-pay" (click)="payAChallan(challan['id'])">Pay Now</button> } @else {
         <div class="detail-item">
           <span class="label">Settled Date:</span>
           <span class="value">{{ challan["settlement_date"] }}</span>
@@ -51,7 +54,7 @@
     }
   </div>
   <div class="pay-all-container">
-    <button class="btn-pay-all">Pay All Challans</button>
+    <button class="btn-pay-all" (click)="payAllChallan(vehicleId)">Pay All Challans</button>
   </div>
   } @else {
   <div class="no-challans"><span>No Challans</span></div>

@@ -5,12 +5,10 @@ from utils.jwt_decode import encode_token, decode_token
 from utils.password import check_password
 from jose import JWTError
 from azure.cosmos import  exceptions
-import uuid
 import datetime
 import time
 import logging
 from utils.send_email import send_email
-import bcrypt
 
 police_trigger = func.Blueprint()
 
@@ -161,7 +159,6 @@ def create_challan_by_vehicleId(req: func.HttpRequest) -> func.HttpResponse:
             token = token.split(" ")[1]
         
         if not police_middleware(token):
-
             return func.HttpResponse(
                 json.dumps("Unauthorized"),
                 status_code=401
@@ -171,7 +168,6 @@ def create_challan_by_vehicleId(req: func.HttpRequest) -> func.HttpResponse:
         challan_container = database.get_container_client(CHALLAN_CONTAINER)
         vehicle_container = database.get_container_client(VEHICLE_CONTAINER)
 
-        challanId = uuid.uuid4()
         vehicleId = body['vehicleId']
         amount = f"{body['amount']}"
 

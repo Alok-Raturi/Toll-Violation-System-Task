@@ -1,7 +1,8 @@
 .challans-container {
-  padding: 20px;
+  padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  margin-bottom: 4rem;
 }
 .challans-grid {
   display: grid;
@@ -118,4 +119,15 @@
   .challan-card {
     margin-bottom: 15px;
   }
+}
+
+.dashboard-header {
+  margin-bottom: 2.5rem;
+}
+
+.heading {
+  color: #1a237e;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
 }

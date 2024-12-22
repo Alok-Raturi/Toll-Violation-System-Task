@@ -29,6 +29,6 @@ def send_email(email,subject,body):
         result = poller.result()
         print("Message sent: ", result.message_id)
 
-    except Exception as ex:
-        print(ex)
+    except Exception as e:
+        print(e)
 

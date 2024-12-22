@@ -1,0 +1,193 @@
+2024-12-22 11:29:16,650 - INFO - RTO Application started.
+2024-12-22 11:29:18,955 - INFO - User selected option 1
+2024-12-22 11:29:28,801 - INFO - User input received for creation: alok, alok@gmail.com
+2024-12-22 11:29:28,860 - INFO - Email validation successful for: alok@gmail.com
+2024-12-22 11:29:28,861 - INFO - Password validation successful.
+2024-12-22 11:29:28,861 - INFO - Sending request to create-police-man with data: {'name': 'alok', 'email': 'alok@gmail.com', 'password': 'Alok@123', 'designation': 'police'}
+2024-12-22 11:29:41,973 - INFO - API response: Successfully created police man user
+2024-12-22 11:29:41,973 - INFO - User created: alok with designation police
+2024-12-22 11:29:41,974 - INFO - Request successful: Successfully created police man user
+2024-12-22 11:52:46,664 - INFO - RTO Application started.
+2024-12-22 11:52:49,275 - INFO - User selected option 1
+2024-12-22 11:53:21,323 - INFO - User input received for creation: Alok Raturi, alok.raturi09@gmail.com
+2024-12-22 11:53:21,442 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 11:53:21,444 - ERROR - Password does not meet the required constraints.
+2024-12-22 11:55:03,465 - INFO - RTO Application started.
+2024-12-22 11:55:04,197 - INFO - User selected option 1
+2024-12-22 11:55:18,409 - INFO - User input received for creation: Alok Raturi, alok.raturi09@gmail.com
+2024-12-22 11:55:18,461 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 11:55:18,461 - ERROR - Password does not meet the required constraints.
+2024-12-22 11:55:21,511 - INFO - User selected option 1
+2024-12-22 11:55:35,375 - INFO - User input received for creation: alok@.com, alok.raturi
+2024-12-22 11:55:35,375 - ERROR - Invalid email entered: alok.raturi
+2024-12-22 12:00:35,707 - INFO - RTO Application started.
+2024-12-22 12:00:37,665 - INFO - User selected option 1
+2024-12-22 12:01:28,299 - INFO - User input received for creation: Alok Raturi, alok.raturi09@gmail.com
+2024-12-22 12:01:28,351 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 12:01:28,351 - ERROR - Password does not meet the required constraints.
+2024-12-22 12:01:29,883 - INFO - User selected option 1
+2024-12-22 12:01:42,004 - INFO - User input received for creation: Alok Raturi, alok.raturi
+2024-12-22 12:01:42,004 - ERROR - Invalid email entered: alok.raturi
+2024-12-22 12:01:44,685 - INFO - User selected option 1
+2024-12-22 12:02:02,480 - INFO - User input received for creation: Alok Raturi, alok.raturi09@gmail.com
+2024-12-22 12:02:02,489 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 12:02:02,490 - INFO - Password validation successful.
+2024-12-22 12:02:02,490 - INFO - Sending request to create-police-man with data: {'name': 'Alok Raturi', 'email': 'alok.raturi09@gmail.com', 'password': 'Alok@123', 'designation': 'police'}
+2024-12-22 12:02:15,569 - INFO - User created: Alok Raturi with designation police
+2024-12-22 12:02:15,570 - INFO - Request successful: None
+2024-12-22 12:05:25,785 - INFO - RTO Application started.
+2024-12-22 12:05:27,634 - INFO - User selected option 1
+2024-12-22 12:05:42,987 - INFO - User input received for creation: Alok Raturi, alok.raturi09@gmail.com
+2024-12-22 12:05:43,048 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 12:05:43,049 - ERROR - Password does not meet the required constraints.
+2024-12-22 12:05:46,757 - INFO - User selected option 1
+2024-12-22 12:06:02,823 - INFO - User input received for creation: Alok Raturi, alok.raturi
+2024-12-22 12:06:02,824 - ERROR - Invalid email entered: alok.raturi
+2024-12-22 12:06:21,795 - INFO - RTO Application started.
+2024-12-22 12:06:22,368 - INFO - User selected option 1
+2024-12-22 12:06:37,062 - INFO - User input received for creation: Alok Raturi, alok.raturi
+2024-12-22 12:06:37,063 - ERROR - Invalid email entered: alok.raturi
+2024-12-22 12:07:15,284 - INFO - RTO Application started.
+2024-12-22 12:07:28,469 - INFO - User selected option 1
+2024-12-22 12:07:37,387 - INFO - User input received for creation: Alok Raturi, alok.raturi
+2024-12-22 12:07:37,388 - ERROR - Invalid email entered: alok.raturi
+2024-12-22 12:07:41,577 - INFO - User selected option 1
+2024-12-22 12:07:53,501 - INFO - User input received for creation: alok raturi, alok.raturi09@gmail.com
+2024-12-22 12:07:53,552 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 12:07:53,552 - ERROR - Password does not meet the required constraints.
+2024-12-22 12:07:55,887 - INFO - User selected option 1
+2024-12-22 12:08:07,577 - INFO - User input received for creation: Alok Raturi, alok.raturi09@gmail.com
+2024-12-22 12:08:07,590 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 12:08:07,591 - INFO - Password validation successful.
+2024-12-22 12:08:07,591 - INFO - Sending request to create-police-man with data: {'name': 'Alok Raturi', 'email': 'alok.raturi09@gmail.com', 'password': 'Alok@123', 'designation': 'police'}
+2024-12-22 12:08:14,346 - INFO - User created: Alok Raturi with designation police
+2024-12-22 12:08:14,347 - INFO - Request successful: Successfully created police man user
+2024-12-22 12:08:47,889 - INFO - RTO Application started.
+2024-12-22 12:08:50,526 - INFO - User selected option 2
+2024-12-22 12:09:31,275 - INFO - User input received for creation: Alok Raturi, alok.raturi09@gmail.com
+2024-12-22 12:09:31,331 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 12:09:31,332 - ERROR - Password does not meet the required constraints.
+2024-12-22 12:09:35,549 - INFO - User selected option 2
+2024-12-22 12:09:46,975 - INFO - User input received for creation: alok raturi, alok.raturi
+2024-12-22 12:09:46,975 - ERROR - Invalid email entered: alok.raturi
+2024-12-22 12:10:14,435 - INFO - RTO Application started.
+2024-12-22 12:10:15,068 - INFO - User selected option 2
+2024-12-22 12:10:36,930 - INFO - User input received for creation: alok raturi, alok.raturi09@gmail.com
+2024-12-22 12:10:37,016 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 12:10:37,018 - INFO - Password validation successful.
+2024-12-22 12:10:37,018 - INFO - Sending request to create-toll-man with data: {'name': 'alok raturi', 'email': 'alok.raturi09@gmail.com', 'password': 'Alok@123', 'designation': 'toll'}
+2024-12-22 12:10:41,402 - ERROR - API request failed: 404 - 
+2024-12-22 12:13:15,365 - INFO - RTO Application started.
+2024-12-22 12:13:19,453 - INFO - User selected option 1
+2024-12-22 12:13:39,749 - INFO - User input received for creation: Alok Raturi, alok.raturi09@gmail.com
+2024-12-22 12:13:39,805 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 12:13:39,805 - INFO - Password validation successful.
+2024-12-22 12:13:39,806 - INFO - Sending request to create-police-man with data: {'name': 'Alok Raturi', 'email': 'alok.raturi09@gmail.com', 'password': 'Alok@123', 'designation': 'police'}
+2024-12-22 12:13:42,138 - ERROR - API request failed: 404 - "User already exists"
+2024-12-22 12:13:42,139 - INFO - User created: Alok Raturi with designation police
+2024-12-22 12:13:42,140 - ERROR - Request failed: None
+2024-12-22 12:14:55,296 - INFO - RTO Application started.
+2024-12-22 12:14:56,182 - INFO - User selected option 1
+2024-12-22 12:15:10,644 - INFO - User input received for creation: alok raturi, alok.raturi09@gmail.com
+2024-12-22 12:15:10,701 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 12:15:10,701 - INFO - Password validation successful.
+2024-12-22 12:15:10,701 - INFO - Sending request to create-police-man with data: {'name': 'alok raturi', 'email': 'alok.raturi09@gmail.com', 'password': 'Alok@123', 'designation': 'police'}
+2024-12-22 12:15:12,047 - ERROR - API request failed: 404 - "User already exists"
+2024-12-22 12:15:12,049 - INFO - User created: alok raturi with designation police
+2024-12-22 12:15:12,050 - ERROR - Request failed: None
+2024-12-22 12:15:52,018 - INFO - RTO Application started.
+2024-12-22 12:15:52,828 - INFO - User selected option 1
+2024-12-22 12:16:08,008 - INFO - User input received for creation: alok raturi, alok.raturi09@gmail.com
+2024-12-22 12:16:08,067 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 12:16:08,068 - INFO - Password validation successful.
+2024-12-22 12:16:08,068 - INFO - Sending request to create-police-man with data: {'name': 'alok raturi', 'email': 'alok.raturi09@gmail.com', 'password': 'Alok@123', 'designation': 'police'}
+2024-12-22 12:16:10,210 - ERROR - API request failed: 404 - "User already exists"
+2024-12-22 12:16:10,211 - INFO - User created: alok raturi with designation police
+2024-12-22 12:16:10,211 - ERROR - Request failed: User already exists
+2024-12-22 12:16:19,905 - INFO - User selected option 1
+2024-12-22 12:16:49,537 - INFO - User input received for creation: alok raturi wg, Alok.Raturi@watchguard.com
+2024-12-22 12:16:49,717 - INFO - Email validation successful for: Alok.Raturi@watchguard.com
+2024-12-22 12:16:49,717 - INFO - Password validation successful.
+2024-12-22 12:16:49,718 - INFO - Sending request to create-police-man with data: {'name': 'alok raturi wg', 'email': 'Alok.Raturi@watchguard.com', 'password': 'Alok@123', 'designation': 'police'}
+2024-12-22 12:17:04,172 - INFO - User created: alok raturi wg with designation police
+2024-12-22 12:17:04,173 - INFO - Request successful: Successfully created police man user
+2024-12-22 12:17:09,067 - INFO - User selected option 2
+2024-12-22 12:17:25,884 - INFO - User input received for creation: alok raturi, alok.raturi09@gmail.com
+2024-12-22 12:17:25,901 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 12:17:25,902 - INFO - Password validation successful.
+2024-12-22 12:17:25,902 - INFO - Sending request to create-toll-plaza-man with data: {'name': 'alok raturi', 'email': 'alok.raturi09@gmail.com', 'password': 'Alok@123', 'designation': 'toll'}
+2024-12-22 12:17:33,897 - INFO - User created: alok raturi with designation toll-plaza
+2024-12-22 12:17:33,898 - INFO - Request successful: Successfully created toll plaza user
+2024-12-22 12:18:15,270 - INFO - User selected option 2
+2024-12-22 12:18:26,097 - INFO - User input received for creation: alok.ratu, alda
+2024-12-22 12:18:26,098 - ERROR - Invalid email entered: alda
+2024-12-22 12:18:33,185 - INFO - User selected option 2
+2024-12-22 12:18:51,162 - INFO - User input received for creation: alok raturi, alok.raturi09@gmail.com
+2024-12-22 12:18:51,172 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 12:18:51,172 - INFO - Password validation successful.
+2024-12-22 12:18:51,172 - INFO - Sending request to create-toll-plaza-man with data: {'name': 'alok raturi', 'email': 'alok.raturi09@gmail.com', 'password': 'AAlok@123', 'designation': 'toll'}
+2024-12-22 12:18:52,398 - ERROR - API request failed: 404 - "User already exists"
+2024-12-22 12:18:52,399 - INFO - User created: alok raturi with designation toll-plaza
+2024-12-22 12:18:52,400 - ERROR - Request failed: User already exists
+2024-12-22 12:18:55,943 - INFO - User selected option 3
+2024-12-22 12:19:36,898 - INFO - User input received for creation: Alok Raturi, alok.raturi09@gmail.com
+2024-12-22 12:19:36,899 - INFO - User input received for vehicle creation: UK07_6796, alok.raturi09@gmail.com
+2024-12-22 12:19:36,910 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 12:19:36,910 - INFO - Password validation successful.
+2024-12-22 12:19:36,911 - INFO - Sending request to create-vehicle with data: {'vehicleId': 'UK07_6796', 'email': 'alok.raturi09@gmail.com', 'name': 'Alok Raturi', 'designation': 'user', 'password': 'Alok@123'}
+2024-12-22 12:19:46,632 - INFO - Vehicle created with ID: UK07_6796
+2024-12-22 12:19:46,633 - INFO - Request successful: Successfully created vehicle
+2024-12-22 12:20:17,999 - INFO - User selected option 3
+2024-12-22 12:20:37,356 - INFO - User input received for creation: alok, alok.raturi09@gmail.com
+2024-12-22 12:20:37,356 - INFO - User input received for vehicle creation: UK07_6796, alok.raturi09@gmail.com
+2024-12-22 12:20:37,368 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 12:20:37,368 - INFO - Password validation successful.
+2024-12-22 12:20:37,368 - INFO - Sending request to create-vehicle with data: {'vehicleId': 'UK07_6796', 'email': 'alok.raturi09@gmail.com', 'name': 'alok', 'designation': 'user', 'password': 'Alok@123'}
+2024-12-22 12:20:39,315 - ERROR - API request failed: 404 - "Vehicle Id already exists"
+2024-12-22 12:20:39,316 - INFO - Vehicle created with ID: UK07_6796
+2024-12-22 12:20:39,316 - ERROR - Request failed: Vehicle Id already exists
+2024-12-22 12:21:08,846 - INFO - User selected option 3
+2024-12-22 12:21:32,278 - INFO - User input received for creation: Alok Raturi, alok.raturi09@gmail.com
+2024-12-22 12:21:32,279 - INFO - User input received for vehicle creation: UK07_6797, alok.raturi09@gmail.com
+2024-12-22 12:21:32,289 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 12:21:32,289 - INFO - Password validation successful.
+2024-12-22 12:21:32,289 - INFO - Sending request to create-vehicle with data: {'vehicleId': 'UK07_6797', 'email': 'alok.raturi09@gmail.com', 'name': 'Alok Raturi', 'designation': 'user', 'password': 'Alok@123'}
+2024-12-22 12:21:41,679 - INFO - Vehicle created with ID: UK07_6797
+2024-12-22 12:21:41,679 - INFO - Request successful: Successfully created vehicle
+2024-12-22 12:21:48,348 - INFO - User selected option 3
+2024-12-22 12:22:06,563 - INFO - User input received for creation: Alok Raturi, alok.raturi09@gmail.com
+2024-12-22 12:22:06,564 - INFO - User input received for vehicle creation: UK07_6798, alok.raturi09@gmail.com
+2024-12-22 12:22:06,577 - INFO - Email validation successful for: alok.raturi09@gmail.com
+2024-12-22 12:22:06,577 - INFO - Password validation successful.
+2024-12-22 12:22:06,577 - INFO - Sending request to create-vehicle with data: {'vehicleId': 'UK07_6798', 'email': 'alok.raturi09@gmail.com', 'name': 'Alok Raturi', 'designation': 'user', 'password': 'Alok@123'}
+2024-12-22 12:22:12,435 - INFO - Vehicle created with ID: UK07_6798
+2024-12-22 12:22:12,436 - INFO - Request successful: Successfully created vehicle
+2024-12-22 12:22:18,475 - INFO - User selected option 4
+2024-12-22 12:22:29,146 - INFO - User input received for fastag issuing: UK07_6796, adaaa
+2024-12-22 12:22:29,147 - INFO - Sending request to create-fastag with data: {'tagId': 'UK07_6796', 'vehicleId': 'adaaa'}
+2024-12-22 12:22:30,754 - ERROR - API request failed: 404 - "Your vehicle id is not valid"
+2024-12-22 12:22:30,756 - INFO - Fastag issued with ID: UK07_6796 for vehicle ID: adaaa
+2024-12-22 12:22:30,756 - ERROR - Request failed: Your vehicle id is not valid
+2024-12-22 12:22:35,953 - INFO - User selected option 4
+2024-12-22 12:22:55,193 - INFO - User input received for fastag issuing: F-UK07-6796, UK07_6796
+2024-12-22 12:22:55,193 - INFO - Sending request to create-fastag with data: {'tagId': 'F-UK07-6796', 'vehicleId': 'UK07_6796'}
+2024-12-22 12:23:04,002 - INFO - Fastag issued with ID: F-UK07-6796 for vehicle ID: UK07_6796
+2024-12-22 12:23:04,003 - INFO - Request successful: Successfully created fastag
+2024-12-22 12:23:07,467 - INFO - User selected option 4
+2024-12-22 12:23:32,548 - INFO - User input received for fastag issuing: F-UK07-6797, UK07_6797
+2024-12-22 12:23:32,548 - INFO - Sending request to create-fastag with data: {'tagId': 'F-UK07-6797', 'vehicleId': 'UK07_6797'}
+2024-12-22 12:23:43,937 - INFO - Fastag issued with ID: F-UK07-6797 for vehicle ID: UK07_6797
+2024-12-22 12:23:43,937 - INFO - Request successful: Successfully created fastag
+2024-12-22 12:23:47,587 - INFO - User selected option 4
+2024-12-22 12:24:15,142 - INFO - User input received for fastag issuing: F-UK07-6796, UK07_6798
+2024-12-22 12:24:15,143 - INFO - Sending request to create-fastag with data: {'tagId': 'F-UK07-6796', 'vehicleId': 'UK07_6798'}
+2024-12-22 12:24:16,592 - ERROR - API request failed: 404 - "Fastag id already exists"
+2024-12-22 12:24:16,593 - INFO - Fastag issued with ID: F-UK07-6796 for vehicle ID: UK07_6798
+2024-12-22 12:24:16,593 - ERROR - Request failed: Fastag id already exists
+2024-12-22 12:24:23,110 - INFO - User selected option 4
+2024-12-22 12:24:45,492 - INFO - User input received for fastag issuing: F-UK07-6798, UK07_6798
+2024-12-22 12:24:45,492 - INFO - Sending request to create-fastag with data: {'tagId': 'F-UK07-6798', 'vehicleId': 'UK07_6798'}
+2024-12-22 12:24:53,707 - INFO - Fastag issued with ID: F-UK07-6798 for vehicle ID: UK07_6798
+2024-12-22 12:24:53,707 - INFO - Request successful: Successfully created fastag
+2024-12-22 12:24:56,908 - INFO - User selected option 5
+2024-12-22 12:24:56,909 - INFO - Exiting the application.

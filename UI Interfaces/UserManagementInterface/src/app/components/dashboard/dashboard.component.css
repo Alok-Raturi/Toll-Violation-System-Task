@@ -1,12 +1,10 @@
-/* Styles for the main dashboard layout */
 .dashboard-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
     width: 100vw;
     font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-  }
+}
 
 app-footer{
   position: relative;

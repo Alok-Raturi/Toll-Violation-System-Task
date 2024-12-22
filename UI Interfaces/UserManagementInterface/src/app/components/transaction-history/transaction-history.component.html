@@ -3,7 +3,7 @@
     <h1 class="transaction-heading">Transaction History</h1>
     <p>Tag id : {{tagid}}</p>
   </div>
-@if (transactionHistory) {
+@if (transactionHistory.length>0) {
     <div class="transaction-details">
       <table class="transaction-table">
         <thead>
@@ -16,7 +16,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (transaction of transactionHistory; track transaction.id) {
+          @for (transaction of transactionHistory; track transaction['id']) {
           <tr
             class="{{
               transaction['type'] == 'Debit' ? 'debit' : transaction['type']

@@ -1,5 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -48,19 +54,21 @@ export class RechargeFastagComponent implements OnInit {
     });
   }
 
-  onRecharge(){}
+  onRecharge() {}
 
-  setAmount(amount:number){
-    this.rechargeForm.controls['amount'].setValue(amount)
+  setAmount(amount: number) {
+    this.rechargeForm.controls['amount'].setValue(amount);
   }
 
-  rechargeFastage(){
-    let amount = this.rechargeForm.controls['amount'].value as number
-    let tagId = this.rechargeForm.controls['tag'].value as string
-    this.authService.rechargeFastTag(tagId,amount).subscribe({
-      next:(data)=>{
-        console.log(data)
-      }
-    })
+  rechargeFastage() {
+    let amount = this.rechargeForm.controls['amount'].value as number;
+    let tagId = this.rechargeForm.controls['tag'].value as string;
+    this.authService.rechargeFastTag(tagId, amount).subscribe({
+      next: (data) => {
+        this.authService.fetchFastTag().subscribe((respData) => {
+          this.fastTrackReturn = respData;
+        });
+      },
+    });
   }
 }

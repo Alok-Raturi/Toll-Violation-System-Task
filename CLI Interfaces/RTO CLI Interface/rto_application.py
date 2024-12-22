@@ -1,7 +1,6 @@
-import email_validator as ev
-import re
-import requests
-import json
+import logging
+import getpass
+from utils.rto_application import Rto_Officer
 
 PROMPT = """
 PRESS 1 FOR CREATING A POLICE MAN
@@ -11,144 +10,81 @@ PRESS 4 FOR ISSUING A FASTAG
 PRESS 5 FOR EXIT
 """
 
-BASE_URL = "https://raturifunctionapp.azurewebsites.net/api/rto/"
+logging.basicConfig(filename='rto_application.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger()
 
-PASSWORD_REGEX = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,20}$"
+PROD_BASE_URL = "https://raturifunctionapp.azurewebsites.net/api/rto/"
+TEST_BASE_URL = "http://localhost:7071/api/rto/"
 
-PASSWORD_CONSTRAINT = """
-Your password:\n
-    - should have at least 1 uppercase characters\n
-    - should have at least 1 special character - ?=.*[@#$%^&+=]\n
-    - should have at least 1 digits\n
-    - should have at least 1 lowercase characters\n
-    - should not contain any whitespace characters\n
-    - should have minimum length of 8 characters and max length of 20 characters
-"""
 
 def print_api_results(response):
-    if response.get('status') == 200 or response.get('status') == 201:
-        print(f"\n{response.get('message')}\n")
+    if response.get('status') in [200, 201]:
+        logger.info(f"Request successful: {response.get('data')}")
+        print(f"\n{response.get('data')}\n")
     else:
-        print(f"\n{response.get('message')}\n")
+        logger.error(f"Request failed: {response.get('data')}")
+        print(f"\n{response.get('data')}\n")
 
-class Rto_Officer:
-    def __init__(self):
-        pass
-
-    def create_police(self,name,email,password):
-        user_data = json.dumps({
-            "name": name,
-            "email": email,
-            "password": password,
-            "designation": "police"
-        })
-        print("\nYour request is processing...........\n")
-        created_police = requests.post(f"{BASE_URL}create-police-man",data=user_data)
-        return {
-            'status': created_police.status_code,
-            'message': created_police.json()
-        }
-
-    def create_toll_plaza(self,name,email,password):
-        user_data = json.dumps({
-            "name": name,
-            "email": email,
-            "password": password,
-            "designation": "toll"
-        })
-        print("\nYour request is processing...........\n")
-        created_toll_plaza = requests.post(f"{BASE_URL}create-toll-plaza-man",data=user_data)
-        return {
-            'status': created_toll_plaza.status_code,
-            'message': created_toll_plaza.json()
-        }
-
-    def create_vehicle(self,vehicleid,email,name,password):
-        vehicle_data = json.dumps({
-            "vehicleId": vehicleid,
-            "email": email,
-            "name": name,
-            "designation": "user",
-            "password": password
-        })
-        print("\nYour request is processing...........\n")
-        created_vehicle = requests.post(f"{BASE_URL}create-vehicle",data=vehicle_data)
-        return {
-            'status': created_vehicle.status_code,
-            'message': created_vehicle.json()
-        }
-
-    def issue_fastag(self,tagid,vehicleid):
-        fastag_data = json.dumps({
-            "tagId": tagid,
-            "vehicleId": vehicleid
-        })
-        print("\nYour request is processing...........\n")
-        created_fastag = requests.post(f"{BASE_URL}create-fastag",data=fastag_data)
-        return {
-            'status': created_fastag.status_code,
-            'message': created_fastag.json()
-        }
+def get_input_for_user_creation():
+    name = input("Enter the name: ")
+    email = input("Enter the email: ")
+    password = getpass.getpass("Enter your password: ")
+    logger.info(f"User input received for creation: {name}, {email}")
+    return name, email, password
 
 
-if __name__ =="__main__":
+def get_input_for_vehicle_creation():
+    vehicleid = input("Enter the vehicle id: ")
+    name,email,password = get_input_for_user_creation()
+    logger.info(f"User input received for vehicle creation: {vehicleid}, {email}")
+    return vehicleid, email, name, password
+
+
+def get_input_for_fastag_issuing():
+    """Get user input for fastag issuing."""
+    tagid = input("Enter the tag id: ")
+    vehicleid = input("Enter the vehicle id: ")
+    logger.info(f"User input received for fastag issuing: {tagid}, {vehicleid}")
+    return tagid, vehicleid
+
+
+if __name__ == "__main__":
+    logger.info("RTO Application started.")
     print("Welcome to the RTO Application")
-    rto_officer = Rto_Officer()
+    rto_officer = Rto_Officer(BASE_URL=PROD_BASE_URL)
     while True:
         print("Please select the option from the below menu")
         print(PROMPT)
         option = input("Enter the option: ")
-
+        logger.info(f"User selected option {option}")
+        
         if option == "1" or option == "2":
-            name = input("Enter the name: ")
-            email = input("Enter the email: ")
-            password = input("Enter the password: ")
-            try:
-                ev.validate_email(email)
-            except ev.EmailNotValidError:
-                print("Email is not valid...")
-                print("Retry")
-                continue
-
-
-            if not re.match(PASSWORD_REGEX, password):
-                print("Your password does not meet the following constraints")
-                print(PASSWORD_CONSTRAINT)
-
-            if option == "1":
-                print("Creating a police")
-                response = rto_officer.create_police(name,email,password)
-                print_api_results(response)
-            elif option == "2":
-                print("Creating a toll plaza")
-                response = rto_officer.create_toll_plaza(name,email,password)
+            name, email, password = get_input_for_user_creation()
+            usertype = "police" if option=="1" else "toll"
+            print(f"Creating a {usertype} man\n")
+            response = rto_officer.create_user(usertype, name, email, password)
+            if response:
                 print_api_results(response)
 
         elif option == "3":
             print("Creating a vehicle")
-            vehicleid = input("Enter the vehicle id: ")
-            email = input("Enter the email: ")
-            name = input("Enter the name: ")
-            password = input("Enter the password: ")
-            if not re.match(PASSWORD_REGEX, password):
-                print("Your password does not meet the following constraints")
-                print(PASSWORD_CONSTRAINT)
-            
-
-            response = rto_officer.create_vehicle(vehicleid,email,name,password)
-            print_api_results(response)
+            vehicleid, email, name, password = get_input_for_vehicle_creation()
+            response = rto_officer.create_vehicle(vehicleid, email, name, password)
+            if response:
+                print_api_results(response)
 
         elif option == "4":
             print("Issuing a fastag")
-            tagid = input("Enter the tag id: ")
-            vehicleid = input("Enter the vehicle id: ")
-            response = rto_officer.issue_fastag(tagid,vehicleid)
+            tagid, vehicleid = get_input_for_fastag_issuing()
+            response = rto_officer.issue_fastag(tagid, vehicleid)
             print_api_results(response)
-            
+
         elif option == "5":
-            print("Exiting the application")
-            print("Thank you for using the application")
+            logger.info("Exiting the application.")
+            print("Exiting.....\nThank you for using the application")
             del rto_officer
             break
+
         else:
+            logger.warning("Invalid option selected.")
             print("Retry .......")

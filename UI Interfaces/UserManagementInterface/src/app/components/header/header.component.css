@@ -1,57 +1,75 @@
 .header-container {
-  position: sticky;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background: linear-gradient(135deg, #2c3e50, #3498db);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 30px;
-  z-index: 1000;
+  background: #2c3e50;
+  padding: 1rem 2rem;
+  color: white;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .header-container p {
-  color: white;
   margin: 0;
-  font-size: 16px;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
-.header-container p:first-child {
-  font-size: 20px;
-  font-weight: bold;
-  letter-spacing: 1px;
+.header-buttons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 }
 
 .logout {
-  /* background-color: #e74c3c; */
-  background-color: transparent;
-  color: rgb(66, 62, 62);
-  border: none;
-  padding: 8px 20px;
-  cursor: pointer;
-  font-size: 18px;
+  background: transparent;
+  border: 1px solid white;
   color: white;
-  transition: background-color 0.3s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .logout:hover {
-  /* background-color: #c0392b; */
-  transition: all 0.5s;
-  text-decoration: underline;
+  background: white;
+  color: #2c3e50;
 }
 
-.header-buttons{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 30vw;
+.active {
+  background: white;
+  color: #2c3e50;
 }
 
-.active{
-  background-color: #3498db;
-  color: white;
-  border-radius: 5px;
+
+@media screen and (max-width: 980px) {
+  .header-container {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .header-buttons {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+  }
+
+  .logout {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .header-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .logout {
+    width: 100%;
+    margin: 0.25rem 0;
+  }
 }

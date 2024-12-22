@@ -21,8 +21,9 @@ export class TransactionHistoryComponent implements OnInit {
       (params)=>{
         this.authService.fetchHistory(params['id']).subscribe(
           (respData:any)=>{
-            this.transactionHistory = respData
             this.tagid=params['id']
+            if(respData==='No Transactions found') return;
+            this.transactionHistory = respData
           }
         );
       }

@@ -20,11 +20,11 @@ ALERT_EMAIL_BODY = """Hello Sir,<br>
         If you won't pay your challans then your challans will be auto payed on your next toll visit.<br>
         If your fastag won't have enough balance,then your fastag will be blacklisted"""
 
-PROD_CRON_JOB = "00 12 15 * *"
-TEST_CRON_JOB = "24 11 19 * *"
+PROD_CRON_JOB = "00 00 4 15 * *" # 9:30 ist or 4:00 am utc 
+TEST_CRON_JOB = "00 25 12 22 * *"
 
 
-@periodic_alerts_for_due_challan.timer_trigger(schedule=PROD_CRON_JOB, arg_name="myTimer", run_on_startup=False, use_monitor=False) 
+@periodic_alerts_for_due_challan.timer_trigger(schedule=PROD_CRON_JOB, arg_name="myTimer") 
 def periodic_due_challan_alert(myTimer: func.TimerRequest) -> None:
     if myTimer.past_due:
         logging.info('The timer is past due!')
