@@ -68,6 +68,7 @@ def blacklist_fastag(database, tag_id, vehicle_id):
         patch_operations = operations,
         partition_key = vehicle_id
     )
+    logging.warn("Fastag blacklisted")
 
 
 # Get Tag Id from vehicle id
@@ -236,7 +237,8 @@ def settle_overdue_challans_trigger(req: func.HttpRequest) -> func.HttpResponse:
         vehicle_id = req.route_params.get('vehicleId')
         body = json.loads(req.get_body().decode('utf-8'))
         passage_amount = body['passage-amount']
-
+        logging.warn(vehicle_id)
+        logging.warn(passage_amount)
         if not passage_amount.isnumeric():
             return func.HttpResponse(
                 json.dumps("Passage amount is not valid."),
@@ -324,6 +326,7 @@ def settle_overdue_challans_trigger(req: func.HttpRequest) -> func.HttpResponse:
                     json.dumps("Internal server error!! Can't settle challans"),
                     status_code=500
                 ) 
+            remaining_balance = remaining_balance - overdue_challans_amount
             create_transaction(tag_id= tag_id, type= 'debit', amount= passage_amount, description= 'Toll Plaza Passage')
             update_fastag_balance(tag_id= tag_id, vehicle_id= vehicle_id, updated_balance= remaining_balance - passage_amount)
             return func.HttpResponse(

@@ -49,7 +49,7 @@ def create_transaction(tag_id, type, amount, description):
                 "amount" : amount,
                 "description" : description
             }, enable_automatic_id_generation=True)
-
+            logging.warn("Transaction created")
             return True
         else:
             return False

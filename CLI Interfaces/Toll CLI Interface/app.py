@@ -63,7 +63,7 @@ class TollPlazaPerson:
         toll_data = {
             "passage-amount": passage_amount
         }
-        response = requests.post(f"{BASE_TOLL_URL}settle-overdue-challans/{vehicle_id}", data = toll_data, headers = {"Authorization": self.token})
+        response = requests.post(f"{BASE_TOLL_URL}settle-overdue-challans/{vehicle_id}", json = toll_data, headers = {"Authorization": self.token})
         return {
             "body" : response.json(),
             "status_code": response.status_code
@@ -100,7 +100,10 @@ def app_runner():
                         if response['status_code'] == 200:
                             print(response['body'])
                         else:
-                            print(response['body'])    
+                            print(response['body'])  
+                        print()
+                        typewriter(AFTER_LOGIN_PROMPT, delay=0.01) 
+                        login_choice = input("Enter your choice: ")     
                     elif login_choice == '2':    
                         print("\n-----------------  VIEW REMAINING BALANCE  -----------------")
                         tag_id = input("\nEnter FASTag ID: ")
@@ -109,6 +112,9 @@ def app_runner():
                             print(response['body'])
                         else:
                             print(response['body'])
+                        # print()
+                        typewriter(AFTER_LOGIN_PROMPT, delay=0.01) 
+                        login_choice = input("Enter your choice: ")    
                     elif login_choice == '3':
                         print("\n-----------------  NEW ENTRY OF A VEHICLE  -----------------")
                         vehicle_id = input("\nEnter Vehicle ID: ") 
@@ -122,6 +128,10 @@ def app_runner():
                             print(response['body'])
                         else:
                             print(response['body'])
+                        
+                        print()
+                        typewriter(AFTER_LOGIN_PROMPT, delay=0.01) 
+                        login_choice = input("Enter your choice: ")
                     elif login_choice == '4':
                         print("Logging you out ...")
                         time.sleep(1)
