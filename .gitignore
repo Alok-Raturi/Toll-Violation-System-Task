@@ -153,3 +153,4 @@
 
 # CLI Interfaces
 /CLI Interfaces/**/.venv
+/CLI Interfaces/**/*.log

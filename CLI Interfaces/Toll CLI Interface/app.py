@@ -5,7 +5,8 @@ import time
 import sys
 import os
 
-BASE_TOLL_URL = "https://raturifunctionapp.azurewebsites.net/api/toll/"
+PROD_BASE_TOLL_URL = "https://raturifunctionapp.azurewebsites.net/api/toll/"
+TEST_BASE_TOLL_URL = "http://localhost:7071/api/toll/"
 
 APP_INTRODUCTION = "\n-----------------  TOLL VIOLATION DETECTION SYSTEM  -----------------"
 TOLL_INTRO = "\n-----------------  You are at Toll Plaza Person Portal  -----------------"
@@ -33,7 +34,7 @@ def typewriter(text, delay=0.05):
 class TollPlazaPerson:
     def login(self, email, password):
         auth_data = json.dumps({"email": email, "password": password})
-        response = requests.post(BASE_TOLL_URL + "login", data = auth_data)
+        response = requests.post(PROD_BASE_TOLL_URL + "login", data = auth_data)
         if(response.status_code == 200):
             self.token = response.json()['access_token']
         return {
@@ -47,14 +48,14 @@ class TollPlazaPerson:
         self.token = None
 
     def view_challans(self, vehicle_id):
-        response = requests.get(f"{BASE_TOLL_URL}get-challan/{vehicle_id}", headers = {"Authorization": self.token})
+        response = requests.get(f"{PROD_BASE_TOLL_URL}get-challan/{vehicle_id}", headers = {"Authorization": self.token})
         return {
             "body": response.json(),
             "status_code": response.status_code
         }
 
     def view_fastag_balance(self, tag_id):
-        response = requests.get(f"{BASE_TOLL_URL}get-balance/{tag_id}", headers = {"Authorization": self.token})
+        response = requests.get(f"{PROD_BASE_TOLL_URL}get-balance/{tag_id}", headers = {"Authorization": self.token})
         return {
             "body" : response.json(),
             "status_code": response.status_code
@@ -64,7 +65,7 @@ class TollPlazaPerson:
         toll_data = {
             "passage-amount": passage_amount
         }
-        response = requests.post(f"{BASE_TOLL_URL}settle-overdue-challans/{vehicle_id}", json = toll_data, headers = {"Authorization": self.token})
+        response = requests.post(f"{PROD_BASE_TOLL_URL}settle-overdue-challans/{vehicle_id}", json = toll_data, headers = {"Authorization": self.token})
         return {
             "body" : response.json(),
             "status_code": response.status_code

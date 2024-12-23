@@ -51,6 +51,8 @@ if __name__ == '__main__':
                 if choice == '1':
                     vehicle_id = input("Enter vehicle number: ")
                     amount = input("Enter amount: ")
+                    vehicle_id= vehicle_id.upper()
+
                     amount = validate_amount(amount)
                     if amount is None:
                         continue
@@ -64,6 +66,7 @@ if __name__ == '__main__':
 
                 elif choice == '2':
                     vehicle_id = input("Enter vehicle number: ")
+                    vehicle_id = vehicle_id.upper()
                     response = traffic_police.view_vehicle_challan(vehicle_id)
                     if response['status'] == 200:
                         challan_list = response['data']

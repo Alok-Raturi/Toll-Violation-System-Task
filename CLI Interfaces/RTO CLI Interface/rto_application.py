@@ -41,7 +41,6 @@ def get_input_for_vehicle_creation():
 
 
 def get_input_for_fastag_issuing():
-    """Get user input for fastag issuing."""
     tagid = input("Enter the tag id: ")
     vehicleid = input("Enter the vehicle id: ")
     logger.info(f"User input received for fastag issuing: {tagid}, {vehicleid}")

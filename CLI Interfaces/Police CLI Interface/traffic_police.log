@@ -57,3 +57,10 @@
 2024-12-22 16:48:59,106 - ERROR - Password do not match the required credentials for email : alok.raturi09@gmail.com
 2024-12-22 16:49:10,648 - INFO - User alok.raturi09@gmail.com logged in successfully.
 2024-12-22 16:49:34,886 - INFO - Challan created successfully for vehicle UK07_6797 with amount 6789.0.
+2024-12-23 11:35:21,189 - INFO - User alok.raturi09@gmail.com logged in successfully.
+2024-12-23 11:35:53,190 - INFO - Challan created successfully for vehicle UK07_6796 with amount 4000.0.
+2024-12-23 11:37:20,448 - ERROR - Failed to retrieve challan for vehicle uk07_6796: Invalid vehicle Id
+2024-12-23 11:37:30,124 - INFO - User alok.raturi09@gmail.com logged out.
+2024-12-23 13:49:00,500 - ERROR - Login failed, Invalid email alok.raturi09@gmail.om
+2024-12-23 13:49:22,649 - INFO - User alok.raturi09@gmail.com logged in successfully.
+2024-12-23 13:52:45,080 - INFO - User alok.raturi09@gmail.com logged out.
