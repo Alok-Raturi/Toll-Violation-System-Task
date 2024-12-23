@@ -249,8 +249,9 @@ def recharge_fastags(req: func.HttpRequest)-> func.HttpResponse:
 
         amount = f"{body['amount']}"
         tagid = req.route_params.get('tagid')   
-
-        if(tagid==""):
+        logging.warning(amount)
+        logging.warning(tagid)
+        if tagid=="":
             return func.HttpResponse(
                 json.dumps("Invalid Fastag"),
                 status_code=404
@@ -262,9 +263,9 @@ def recharge_fastags(req: func.HttpRequest)-> func.HttpResponse:
                 status_code=404
             ) 
         amount =int(amount)
-        if(amount<0):
+        if(amount<=0):
             return func.HttpResponse(
-                json.dumps({"msg":"Invalid amount"}),
+                json.dumps("Invalid amount"),
                 status_code=404
             )
         

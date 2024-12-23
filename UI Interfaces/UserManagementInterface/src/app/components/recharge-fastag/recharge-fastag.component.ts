@@ -7,6 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-recharge-fastag',
@@ -24,7 +25,7 @@ export class RechargeFastagComponent implements OnInit {
       validators: [Validators.required],
     }),
   });
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService,private toast:ToastrService) {}
 
   fastTrackReturn: any = [
     {
@@ -63,6 +64,16 @@ export class RechargeFastagComponent implements OnInit {
   rechargeFastage() {
     let amount = this.rechargeForm.controls['amount'].value as number;
     let tagId = this.rechargeForm.controls['tag'].value as string;
+    if(tagId===''){
+      this.toast.warning("Select a valid tag.")
+      return;
+    }
+
+    if(amount===0){
+      this.toast.error("Select a valid amount.")
+      return;
+    }
+    
     this.authService.rechargeFastTag(tagId, amount).subscribe({
       next: (data) => {
         this.authService.fetchFastTag().subscribe((respData) => {
