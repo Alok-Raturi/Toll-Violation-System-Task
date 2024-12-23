@@ -4,7 +4,7 @@ import time
 import sys
 import os
 
-BASE_TOLL_URL = "http://localhost:7072/api/toll/"
+BASE_TOLL_URL = "https://raturifunctionapp.azurewebsites.net/api/toll/"
 
 APP_INTRODUCTION = "\n-----------------  TOLL VIOLATION DETECTION SYSTEM  -----------------"
 TOLL_INTRO = "\n-----------------  You are at Toll Plaza Person Portal  -----------------"
@@ -18,7 +18,6 @@ AFTER_LOGIN_PROMPT = """
 
 def clear_console(): 
     if os.name == 'nt': 
-        # For Windows OS
         os.system('cls')
     else:
         os.system('clear')
@@ -31,7 +30,6 @@ def typewriter(text, delay=0.05):
     print()
 
 class TollPlazaPerson:
-
     def login(self, email, password):
         auth_data = json.dumps({"email": email, "password": password})
         response = requests.post(BASE_TOLL_URL + "login", data = auth_data)
@@ -62,7 +60,6 @@ class TollPlazaPerson:
         }
 
     def vehicle_entry_at_toll(self, vehicle_id, passage_amount):
-        # settle overdue challans
         toll_data = {
             "passage-amount": passage_amount
         }

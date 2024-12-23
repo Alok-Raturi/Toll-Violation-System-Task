@@ -37,6 +37,8 @@ def police_middleware(token:str):
         data = decode_token(token)
         if data['designation'] != "police":
             return False
+        if data['exp'] < time.time():
+            return False
         return True
     except JWTError:
         return False

@@ -5,7 +5,7 @@ from utils.jwt_decode import encode_token, decode_token
 from jose import JWTError
 from azure.cosmos import  exceptions
 import logging
-import uuid
+import time
 import datetime
 from utils.password import check_password
 
@@ -23,6 +23,8 @@ def user_middleware(token:str):
         logging.warn(token)
         data = decode_token(token)
         if data['designation'] != "user":
+            return False
+        if data['exp']<time.time():
             return False
         return data
     except JWTError:
@@ -247,6 +249,12 @@ def recharge_fastags(req: func.HttpRequest)-> func.HttpResponse:
 
         amount = f"{body['amount']}"
         tagid = req.route_params.get('tagid')   
+
+        if(tagid==""):
+            return func.HttpResponse(
+                json.dumps("Invalid Fastag"),
+                status_code=404
+            )
 
         if not amount.isnumeric():
             return func.HttpResponse(

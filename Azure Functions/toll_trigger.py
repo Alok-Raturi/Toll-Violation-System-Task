@@ -8,6 +8,7 @@ from jose import JWTError
 from azure.cosmos import exceptions
 import logging
 from utils.password import check_password
+import time
 
 toll_trigger = func.Blueprint()
 
@@ -19,11 +20,12 @@ FASTAG_CONTAINER = "Fastag-Table"
 TRANSACTION_CONTAINER = "Transaction-Table"
 
 
-# Validating Designation
 def toll_middleware(token: str):
     try:
         data = decode_token(token)
         if data['designation'] != "toll":
+            return False
+        if data['exp']<time.time():
             return False
         return True
     except JWTError or KeyError:
@@ -104,7 +106,7 @@ def toll_login(req: func.HttpRequest) -> func.HttpResponse:
             enable_cross_partition_query = True
         ))
 
-        if len(items) == 0 or check_password(password,items[0]['password']):
+        if len(items) == 0 or not check_password(password,items[0]['password']):
             return func.HttpResponse(
                 json.dumps("Invalid Email or Password"),
                 status_code = 404
