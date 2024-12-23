@@ -263,7 +263,7 @@ def settle_overdue_challans_trigger(req: func.HttpRequest) -> func.HttpResponse:
         logging.warn('Vehicle validated')
         tag_id = get_tag_id_from_vehicle_id(database, vehicle_id)
 
-        # logging.warn("Tag id fetched")
+        logging.warn("Tag id fetched")
         if tag_id == '':
             return func.HttpResponse(
                 json.dumps("No Fastag issued for the vehicle. Issue a Fastag first" ),
@@ -272,7 +272,7 @@ def settle_overdue_challans_trigger(req: func.HttpRequest) -> func.HttpResponse:
 
         logging.warn("Tag id fetched")
         fastag_container = database.get_container_client(FASTAG_CONTAINER)
-        query = "SELECT c.balance FROM c WHERE c.id = @tagId"
+        query = "SELECT c.balance, c.status FROM c WHERE c.id = @tagId"
         items = list(fastag_container.query_items(
             query=query,
             parameters=[
@@ -289,16 +289,18 @@ def settle_overdue_challans_trigger(req: func.HttpRequest) -> func.HttpResponse:
         logging.warn(items)
         logging.warn("Remaining Balance Fetched")
 
+        fastag_status = items[0]['status']
+        if(fastag_status == 'invalid'):
+            return func.HttpResponse(
+                json.dumps("Can't Proceed as your Fastag is blacklisted!!! \nTip: Contact RTO Office for resolution"),
+                status_code = 404
+            )
         remaining_balance = items[0]['balance']   # Fetched remaining balance
         logging.warn(remaining_balance)
 
         # Fetching overdue challans
         overdue_challans = fetch_overdue_challan(vehicle_id)
-        if not overdue_challans:
-            return func.HttpResponse(
-                json.dumps("Internal server error"),
-                status_code= 500
-            )
+
         # No challan: Deduct passage amount and pass
         if len(overdue_challans) == 0:
             if remaining_balance >= passage_amount:

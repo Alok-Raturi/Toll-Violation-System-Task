@@ -49,27 +49,24 @@ def total_overdue_challans(challans):
 
 
 def fetch_overdue_challan(vehicle_id):
-    try:
-        database = client.get_database_client(DATABASE_NAME)
-        challan_container = database.get_container_client(CHALLAN_CONTAINER)
-        current_time = time.time()
-        logging.warn(current_time)
+    database = client.get_database_client(DATABASE_NAME)
+    challan_container = database.get_container_client(CHALLAN_CONTAINER)
+    current_time = time.time()
+    logging.warn(current_time)
 
-        query = '''SELECT c.id, c.amount 
-                   FROM c 
-                   WHERE c.vehicleId = @vehicleId 
-                   AND c.status = 'unsettled' 
-                   AND @currentTime > c.due_time  '''
+    query = '''SELECT c.id, c.amount 
+                FROM c 
+                WHERE c.vehicleId = @vehicleId 
+                AND c.status = 'unsettled' 
+                AND @currentTime > c.due_time  '''
 
-        items = list(challan_container.query_items(
-            query=query,
-            parameters=[
-                {"name": "@vehicleId", "value": vehicle_id},
-                {"name": "@currentTime", "value": current_time}
-            ],
-            enable_cross_partition_query=True
-        ))
-        logging.warn(items)
-        return items
-    except:
-        return False
+    items = list(challan_container.query_items(
+        query=query,
+        parameters=[
+            {"name": "@vehicleId", "value": vehicle_id},
+            {"name": "@currentTime", "value": current_time}
+        ],
+        enable_cross_partition_query=True
+    ))
+    logging.warn(items)
+    return items

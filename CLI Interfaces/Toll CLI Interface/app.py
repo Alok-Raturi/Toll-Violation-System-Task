@@ -1,4 +1,5 @@
 import requests
+import datetime
 import json
 import time
 import sys
@@ -11,10 +12,10 @@ TOLL_INTRO = "\n-----------------  You are at Toll Plaza Person Portal  --------
 INITIAL_PROMPT = "\nPRESS \n1 for LOGIN\n2 for EXIT\n"
 AFTER_LOGIN_PROMPT = """
 \nPRESS
-1 to view unsettled overdue challans of a vehicle
-2 to fetch remaining balance of a FASTag
-3 to make an entry of a vehicle at Toll Plaza
-4 to Logout\n"""
+1. View unsettled overdue challans
+2. Fetch remaining balance
+3. Scan Vehicle
+4. Logout\n"""
 
 def clear_console(): 
     if os.name == 'nt': 
@@ -76,80 +77,81 @@ def app_runner():
     print(TOLL_INTRO)
     typewriter(INITIAL_PROMPT)
     user_choice = input("Enter Your Choice: ")
-    while user_choice != '2':
-        if user_choice == '1':
-            # Login
-            print("\n-----------------  LOGIN  -----------------\n")
-            user_email = input("Enter registered email: ").strip()
-            user_password = input("Enter password: ").strip()
-            # Using dummy values for testing purposes
-            toll_user = TollPlazaPerson()
-            login = toll_user.login(user_email, user_password)
+    if user_choice == '1':
+        # Login
+        print("\n-----------------  LOGIN  -----------------\n")
+        user_email = input("Enter registered email: ").strip()
+        user_password = input("Enter password: ").strip()
+        # Using dummy values for testing purposes
+        toll_user = TollPlazaPerson()
+        login = toll_user.login(user_email, user_password)
 
-            if login['status_code'] == 200:
-                # Login successful
-                clear_console()
-                print("\n-----------------  LOGIN SUCCESSFUL  -----------------")
+        if login['status_code'] == 200:
+            # Login successful
+            print("\n-----------------  LOGIN SUCCESSFUL  -----------------")
+            while True:
                 typewriter(AFTER_LOGIN_PROMPT, delay=0.01)
-                login_choice = input("Enter your choice: ")
-                while login_choice != '4':
-                    if login_choice == '1':
-                        print("\n-----------------  VIEW UNSETTLED OVERDUE CHALLANS  -----------------")
-                        vehicle_id = input("\nEnter Vehicle ID: ") 
-                        response = toll_user.view_challans(vehicle_id)
-                        if response['status_code'] == 200:
-                            print(response['body'])
-                        else:
-                            print(response['body'])  
-                        print()
-                        typewriter(AFTER_LOGIN_PROMPT, delay=0.01) 
-                        login_choice = input("Enter your choice: ")     
-                    elif login_choice == '2':    
-                        print("\n-----------------  VIEW REMAINING BALANCE  -----------------")
-                        tag_id = input("\nEnter FASTag ID: ")
-                        response = toll_user.view_fastag_balance(tag_id)
-                        if response['status_code'] == 200:
-                            print(response['body'])
-                        else:
-                            print(response['body'])
-                        # print()
-                        typewriter(AFTER_LOGIN_PROMPT, delay=0.01) 
-                        login_choice = input("Enter your choice: ")    
-                    elif login_choice == '3':
-                        print("\n-----------------  NEW ENTRY OF A VEHICLE  -----------------")
-                        vehicle_id = input("\nEnter Vehicle ID: ") 
-                        passage_amount = input("Enter Passage Amount for Vehicle: ")
-
-                        while not passage_amount.isnumeric():
-                            passage_amount = input("\nEnter valid Passage Amount: ")
-
-                        response = toll_user.vehicle_entry_at_toll(vehicle_id, passage_amount)
-                        if response['status_code'] == 200:
-                            print(response['body'])
-                        else:
-                            print(response['body'])
-                        
-                        print()
-                        typewriter(AFTER_LOGIN_PROMPT, delay=0.01) 
-                        login_choice = input("Enter your choice: ")
-                    elif login_choice == '4':
-                        print("Logging you out ...")
-                        time.sleep(1)
-                        toll_user.logout()
-                        print("\n-----------------  Logout Successful  -----------------\n")
+                login_choice = input("Enter your choice: ").strip()
+                if login_choice == '1':
+                    print("\n-----------------  VIEW UNSETTLED OVERDUE CHALLANS  -----------------")
+                    vehicle_id = input("\nEnter Vehicle ID: ") 
+                    response = toll_user.view_challans(vehicle_id)
+                    if response['status_code'] == 200:
+                        challan_list = response['body']
+                        print('''
+ID\t\t\t\t\tAmount\t\tLocation\tDescription\t\tDate\t\tDue Time
+                              ''')
+                        for challan in challan_list:
+                            due_time = datetime.datetime.fromtimestamp(challan['due_time'])
+                            formatted_due_time = due_time.strftime('%Y-%m-%d %H:%M:%S')
+                            print(f'''
+{challan['id']}\t{challan['amount']}\t\t{challan['location']}\t{challan['description']}\t{challan['date']}\t{formatted_due_time}
+                            ''')
                     else:
-                        print("Invalid Choice !  ABORTING")
-                        login_choice = input("Enter your choice again: ")
-            else:
-                print('\n')
-                print(login['body'])
+                        print('\n',response['body'])  
+                    continue
+                elif login_choice == '2':    
+                    print("\n-----------------  VIEW REMAINING BALANCE  -----------------")
+                    tag_id = input("\nEnter FASTag ID: ")
+                    response = toll_user.view_fastag_balance(tag_id)
+                    if response['status_code'] == 200:
+                        print("Remaining Balance: ",response['body']['balance'])
+                    else:
+                        print('\n', response['body'])
+                    continue
+                elif login_choice == '3':
+                    print("\n-----------------  SCAN VEHICLE  -----------------")
+                    vehicle_id = input("\nEnter Vehicle ID: ") 
+                    passage_amount = input("Enter Passage Amount for Vehicle: ").strip()
 
-        elif user_choice == '2':
-            print("\nExiting from application\n")
+                    while not passage_amount.isnumeric():
+                        passage_amount = input("\nEnter valid Passage Amount: ").strip()
+
+                    response = toll_user.vehicle_entry_at_toll(vehicle_id, passage_amount)
+                    if response['status_code'] == 200:
+                        print(response['body'])
+                    else:
+                        print('\n', response['body'])
+                    continue
+                elif login_choice == '4':
+                    print("Logging you out ...")
+                    time.sleep(1)
+                    toll_user.logout()
+                    print("\n-----------------  Logout Successful  -----------------\n")
+                    break
+                else:
+                    print("Invalid Choice !  ABORTING")
+                    login_choice = input("Enter your choice again: ").strip()
         else:
-            print('Invalid choice')
-            typewriter(INITIAL_PROMPT)
-            user_choice = input('Enter your choice: ')
+            print('\n')
+            print('\n', login['body'])
+
+    elif user_choice == '2':
+        print("\nExiting from application\n")
+    else:
+        print('Invalid choice')
+        print("\nExiting from application\n")
+
 
 
 if __name__ == '__main__':
