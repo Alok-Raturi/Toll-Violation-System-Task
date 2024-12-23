@@ -159,24 +159,31 @@ def get_challan(req: func.HttpRequest) -> func.HttpResponse:
                 json.dumps("Invalid vehicle Id"),
                 status_code=404
             )
+        current_time = time.time()
 
-        query = "SELECT * FROM c WHERE c.vehicleId = @vehicleId"
-        items = list(challan_container.query_items(
+        query = '''SELECT c.id, c.amount, c.location, c.description, c.date, c.due_time 
+                   FROM c 
+                   WHERE c.vehicleId = @vehicleId 
+                   AND c.status = 'unsettled' 
+                   AND @currentTime > c.due_time  '''
+
+        overdue_challans = list(challan_container.query_items(
             query=query,
             parameters=[
-                {"name": "@vehicleId", "value": vehicle_id}
+                {"name": "@vehicleId", "value": vehicle_id},
+                {"name": "@currentTime", "value": current_time}
             ],
             enable_cross_partition_query=True
         ))
 
-        if(len(items)==0):
+        if len(overdue_challans)==0:
             return func.HttpResponse(
                 json.dumps("No Overdue Challan for this vehicle"),
                 status_code=200
             )
 
         return func.HttpResponse(
-            json.dumps(items),
+            json.dumps(overdue_challans),
             status_code=200
         )
     except (Exception,exceptions.CosmosHttpResponseError) as e:
