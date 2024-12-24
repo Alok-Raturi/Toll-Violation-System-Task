@@ -64,3 +64,4 @@
 2024-12-23 13:49:00,500 - ERROR - Login failed, Invalid email alok.raturi09@gmail.om
 2024-12-23 13:49:22,649 - INFO - User alok.raturi09@gmail.com logged in successfully.
 2024-12-23 13:52:45,080 - INFO - User alok.raturi09@gmail.com logged out.
+2024-12-24 11:21:02,042 - ERROR - Login failed for alok.raturi09@gmail.com: Internal Server Error

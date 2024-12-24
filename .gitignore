@@ -5,7 +5,8 @@
 .vscode
 /Terraform IAC/terraform.tfstate
 /Terraform IAC/terraform.tfstate.backup
-
+/CLI Interfaces/Police CLI Interface/utils/__pycache__/*
+/CLI Interfaces/Police CLI Interface/traffic_police.log
 
 # Azure Function 
 /**/__pycache_ 

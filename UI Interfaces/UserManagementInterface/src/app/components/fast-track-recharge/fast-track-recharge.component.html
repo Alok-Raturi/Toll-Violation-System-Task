@@ -25,7 +25,7 @@
               <div class="info-row">
                 <span class="label">Status</span>
                 <span class="value status-badge" [class]="tag['status'].toLowerCase()">
-                  {{ tag["status"] }}
+                  {{ tag["status"] | uppercase}}
                 </span>
               </div>
             </div>

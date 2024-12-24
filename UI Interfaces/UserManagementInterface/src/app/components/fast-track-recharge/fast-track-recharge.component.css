@@ -48,7 +48,7 @@
 }
 
 .fastag-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-10px);
   box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -108,12 +108,12 @@
   font-weight: 500;
 }
 
-.active {
+.valid {
   background: #dcfce7;
   color: #166534;
 }
 
-.inactive {
+.invalid {
   background: #fee2e2;
   color: #991b1b;
 }

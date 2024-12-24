@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { DatePipe } from '@angular/common';
+import { DatePipe, UpperCasePipe } from '@angular/common';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-fast-track-recharge',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, UpperCasePipe],
   templateUrl: './fast-track-recharge.component.html',
   styleUrl: './fast-track-recharge.component.css'
 })
@@ -17,19 +17,19 @@ export class FastTrackRechargeComponent {
     {
       id:"1",
       vehicleId:"01",
-      status:"Active",
+      status:"Valid",
       balance:"1000"
     },
     {
       id:"2",
       vehicleId:"02",
-      status:"Blocked",
+      status:"Invalid",
       balance:"101"
     },
     {
       id:"3",
       vehicleId:"03",
-      status:"Active",
+      status:"Invalid",
       balance:"11"
     },
     ];
