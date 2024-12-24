@@ -24,7 +24,7 @@
           >
             <td>{{ transaction["id"] }}</td>
             <td class="transaction-type">{{ transaction["amount"] }}</td>
-            <td>{{ transaction["timestamp"] | date:"short" }}</td>
+            <td>{{ (transaction["timestamp"] + 'Z') | date: "short" : "+0530" }}</td>
             <td class="transaction-type">{{ transaction["type"] }}</td>
             <td>{{ transaction["description"]}}</td>
           </tr>

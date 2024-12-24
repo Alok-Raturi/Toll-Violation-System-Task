@@ -29,8 +29,8 @@
           <span class="value">{{ challan["location"] }}</span>
         </div>
         <div class="detail-item">
-          <span class="label">Timestamp:</span>
-          <span class="value">{{ challan["date"] }}</span>
+          <span class="label">Creation Time:</span>
+          <span class="value">{{ (challan["date"]+ 'Z') | date: "short" : "+0530"}}</span>
         </div>
         <div class="detail-item">
           <span class="label">Amount:</span>
@@ -40,13 +40,13 @@
         <div class="detail-item">
           <span class="label">Due Date:</span>
           <span class="value due-date">{{
-            getDueDate(challan["due_time"]) | date : "short"
+            ((getDueDate(challan["due_time"])+"")) | date: "short"
           }}</span>
         </div>
         <button class="btn-pay" (click)="payAChallan(challan['id'])">Pay Now</button> } @else {
         <div class="detail-item">
           <span class="label">Settled Date:</span>
-          <span class="value">{{ challan["settlement_date"] }}</span>
+          <span class="value">{{ (challan["settlement_date"]+'Z') | date: "short" : "+0530"}}</span>
         </div>
         }
       </div>

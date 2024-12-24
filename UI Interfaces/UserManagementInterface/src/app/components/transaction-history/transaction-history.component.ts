@@ -29,4 +29,8 @@ export class TransactionHistoryComponent implements OnInit {
       }
      );
   }
+
+  gettime(time:number){
+
+  }
 }

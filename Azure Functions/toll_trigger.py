@@ -176,7 +176,7 @@ def get_challan(req: func.HttpRequest) -> func.HttpResponse:
         if len(overdue_challans)==0:
             return func.HttpResponse(
                 json.dumps("No Overdue Challan for this vehicle"),
-                status_code=200
+                status_code=404
             )
 
         return func.HttpResponse(
