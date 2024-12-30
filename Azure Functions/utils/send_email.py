@@ -1,5 +1,6 @@
 from azure.communication.email import EmailClient
 import os
+import logging
 
 def send_email(email,subject,body):
     try:
@@ -28,7 +29,8 @@ def send_email(email,subject,body):
         poller = client.begin_send(message)
         result = poller.result()
         print("Message sent: ", result.message_id)
+        logging.warning("Email sent successfully")
 
     except Exception as e:
-        print(e)
+        logging.warning("Can't send email")
 
