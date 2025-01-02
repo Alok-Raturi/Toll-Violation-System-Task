@@ -1,8 +1,12 @@
 from utils.db_connection import challan_container
 from models.challan_model import Challan
+import time
+import logging
+
 class ChallanRepo:
     def __init__(self):
         pass
+    
     def create_challan(self, challan: Challan):
         # Creating new challan in challan table
         challan_container.create_item({
@@ -28,7 +32,7 @@ class ChallanRepo:
         )) 
         return items
         
-    def get_unsettled_overdue_challans(self):
+    def get_unsettled_overdue_challans(self, vehicle_id):
         current_time = time.time()
         query = '''SELECT *
                    FROM c 
@@ -53,37 +57,53 @@ class ChallanRepo:
             {"op":"replace", "path":"/settlement_date", "value": settlement_time}
         ]
         challan_container.patch_item(
-            item = challan.id,
+            item = challan_id,
             patch_operations=operations,
             partition_key=vehicle_id
         )
-        logging.warn("Paid a challan")
+        logging.warning("Paid a challan")
         
-    def pay_all_challans(self, unsettled_challan_ids, vehicle_id):
+    def pay_all_challans(self, challans, vehicle_id):
         settlement_time = time.time()
         operations = [
             {"op":"replace", "path":"/status", "value": "settled"},
             {"op":"replace", "path":"/settlement_date", "value": settlement_time}
         ]
-        for id in unsettled_challan_ids:
-            challan_container.patch_item(
-                item = id,
-                patch_operations=operations,
-                partition_key=vehicle_id
-            )
-        logging.warn("Paid all challans")    
+        is_paid = False
+        for challan in challans:
+            if challan['status'] == "unsettled":
+                is_paid = True
+                challan_container.patch_item(
+                    item = challan['id'],
+                    patch_operations=operations,
+                    partition_key=vehicle_id
+                )
+        logging.warning("Paid all challans")    
+        return is_paid
 
-    def settle_all_overdue_challans(self, unsettled_overdue_challan_ids, vehicle_id):
+    def settle_all_overdue_challans(self, unsettled_overdue_challans, vehicle_id):
         settlement_time = time.time()
         operations = [
             {"op":"replace", "path":"/status", "value": "settled"},
             {"op":"replace", "path":"/settlement_date", "value": settlement_time}
         ]
-        for id in unsettled_overdue_challan_ids:
+        
+        for challan in unsettled_overdue_challans:
             challan_container.patch_item(
-                item = id,
+                item = challan.id,
                 patch_operations=operations,
                 partition_key=vehicle_id
             )
-        logging.warn("Settled all overdue challans")
+        logging.warning("Settled all overdue challans")
         
+    def does_challan_exist(self, id):
+        query = "SELECT * FROM c WHERE c.id = @id"
+        items = list(challan_container.query_items(
+            query=query,
+            parameters=[
+                {"name":"@id", "value":id}
+            ],
+            enable_cross_partition_query=True
+        ))
+        return items
+    

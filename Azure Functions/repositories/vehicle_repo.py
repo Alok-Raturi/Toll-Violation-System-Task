@@ -52,15 +52,4 @@ class VehicleRepo:
         else:
             # Vehicle exists
             return items
-        
-    # def get_fastag_id(self, vehicle_id):
-    #     query = "SELECT c.tagId FROM c WHERE c.id = @vehicleId"
-    #     items = list(vehicle_container.query_items(
-    #         query=query,
-    #         parameters=[
-    #             {"name":"@vehicleId","value":vehicle_id}
-    #         ],
-    #         enable_cross_partition_query=True
-    #     ))
-    #     return items[0]['tagId']
     

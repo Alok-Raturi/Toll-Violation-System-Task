@@ -1,8 +1,11 @@
 from models.vehicle_model import Vehicle
 import azure.functions as func
+from services.transaction_service import TransactionRepo
 from repositories.vehicle_repo import VehicleRepo
-from repositories.user_repo import UserRepo
+from repositories.challan_repo import ChallanRepo
 from repositories.fastag_repo import FastagRepo
+from repositories.user_repo import UserRepo
+from models.transaction_model import Transaction
 from utils.send_email import send_email
 import json
 import logging
@@ -17,6 +20,7 @@ Right now your vehicle does not have a fastag.<br>
 You can purchase a fastag.<br>
 Please use this id for any future reference.
 """
+
 
 class VehicleService:
     def __init__(self):
@@ -56,4 +60,183 @@ class VehicleService:
             json.dumps("Successfully created vehicle"),
             status_code=201
         )
+
+    def scan_vehicle(self, vehicle_id, passage_amount, toll_location):
+
+        # Validating Vehicle
+        vehicle_details = self.vehicle_repo.does_vehicle_exists(vehicle_id)
+        if not vehicle_details:
+            logging.error("No Vehicle with this id")
+            return func.HttpResponse(
+                json.dumps("No Vehicle with this id"),
+                status_code = 404
+            )
+        logging.warning("Vehicle Exists")
+
+        tag_id = vehicle_details[0]['tagId']
+        owner_email = vehicle_details[0]['email']
+
+        if tag_id == '':
+            logging.error("No Fastag issued for the vehicle. Issue a Fastag first" )
+            return func.HttpResponse(
+                json.dumps("No Fastag issued for the vehicle. Issue a Fastag first"),
+                status_code=404
+            )
+        logging.warning(f"Tag id: {tag_id}")
+
+        # Validating fastag
+        fastag_repo = FastagRepo()
+        fastag_details = fastag_repo.does_fastag_exists(tag_id)
+
+        if not fastag_details:
+            logging.error("No fastag with this id")
+            return func.HttpResponse(
+                json.dumps("Internal server error"),
+                status_code = 500
+            )
         
+        status = fastag_details[0]['status']
+        remaining_balance = float(fastag_details[0]['balance'])
+
+        # Validating fastag status
+        if status == "invalid":
+            logging.error("Can't Proceed as your Fastag is blacklisted!!!")
+            return func.HttpResponse(
+                json.dumps("Can't Proceed as your Fastag is blacklisted!!! \nTip: Contact RTO Office for resolution"),
+                status_code = 404
+            )
+
+        challan_repo = ChallanRepo()
+        challans = challan_repo.get_unsettled_overdue_challans(vehicle_id)
+        
+        transaction_repo = TransactionRepo()
+        fastag_repo = FastagRepo()
+        # No challan: Deduct passage amount and pass
+        if len(challans) == 0:
+            if remaining_balance >= passage_amount:
+                logging.warning('Case 1 - a')
+                
+                # Create Transaction
+                new_transaction = Transaction(
+                    tag_id = tag_id, 
+                    type = 'debit', 
+                    amount = passage_amount, 
+                    location = toll_location, 
+                    description = 'Toll Plaza Payment'
+                )
+                transaction_repo.create_transaction(new_transaction)
+                
+                # Update fastag balance
+                fastag_repo.set_balance(
+                    tag_id, 
+                    remaining_balance - passage_amount,
+                    vehicle_id,
+                )
+
+                return func.HttpResponse(
+                    json.dumps("Passage Granted"),
+                    status_code = 200
+                )
+            else:
+                logging.warning('Case 1 - b')
+                logging.error("Insufficient Balance for passage")
+                return func.HttpResponse(
+                    json.dumps("Passage Blocked!!!  Insufficient Balance for passage"),
+                    status_code = 404                
+                )
+
+        total = 0
+        for challan in challans:
+            total = total + challan['amount']
+        
+        logging.warning(f"Total overdue challan amount: {total}")
+
+        if remaining_balance >= total + passage_amount:
+            # Deduct total amount, change challans status and pass
+            logging.warning('Case 2 - a')
+            
+            # Settle overdue challans
+            challan_repo.settle_all_overdue_challans(challans, vehicle_id)
+
+            new_transaction = Transaction(
+                tag_id = tag_id, 
+                type = 'debit', 
+                amount = total, 
+                location = toll_location, 
+                description = 'Forced overdue challan payment'
+            )
+            transaction_repo.create_transaction(new_transaction)
+
+            new_transaction = Transaction(
+                tag_id = tag_id, 
+                type = 'debit', 
+                amount = passage_amount, 
+                location = toll_location, 
+                description = 'Toll Plaza Payment'
+            )
+            transaction_repo.create_transaction(new_transaction)
+
+            fastag_repo.set_balance(
+                tag_id, 
+                remaining_balance - passage_amount - total,
+                vehicle_id,
+            )
+
+            return func.HttpResponse(
+                json.dumps("Passage Granted, paid overdue challans"),
+                status_code = 200
+            )
+
+        elif remaining_balance >= passage_amount:
+            # Deduct passage amount, block fastag and pass
+            logging.warning('Case 2 - b')
+            
+            new_transaction = Transaction(
+                tag_id = tag_id, 
+                type = 'debit', 
+                amount = passage_amount, 
+                location = toll_location, 
+                description = 'Toll Plaza Payment'
+            )
+            transaction_repo.create_transaction(new_transaction)
+
+            fastag_repo.set_balance(
+                tag_id, 
+                remaining_balance - passage_amount,
+                vehicle_id,
+            )
+            fastag_repo.change_status(tag_id, "invalid", vehicle_id)
+        
+            return func.HttpResponse(
+                json.dumps("Passage Granted but Fastag blacklisted as insufficient balance for overdue challans"),
+                status_code = 200
+            )
+        else:
+            # Block fastag and don't pass
+            logging.warning('Case 2 - c')
+            fastag_repo.change_status(tag_id, "invalid", vehicle_id)
+            logging.error("Fastag blacklisted as insufficient balance for passage and overdue challans")
+            return func.HttpResponse(
+                json.dumps("Passage Blocked!!! and Fastag blacklisted as insufficient balance for passage and overdue challans"),
+                status_code= 404
+            )
+            
+    def get_vehicles(self, email):
+        user_repo = UserRepo()
+        if not user_repo.does_user_exists(email):
+            logging.error("No user with this email")
+            return func.HttpResponse(
+                json.dumps("No user with this email"),
+                status_code = 404
+            )
+        vehicles = self.vehicle_repo.get_vehicles(email)
+        if len(vehicles) == 0:
+            logging.error("No vehicles found")
+            return func.HttpResponse(
+                json.dumps("No Vehicles found"),
+                status_code=404
+            )
+        return func.HttpResponse(
+            json.dumps(vehicles),
+            status_code = 200
+        )

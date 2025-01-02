@@ -1,6 +1,6 @@
 import time
 class Challan:
-    def __init__(self, vehicle_id, amount, location, description, status):
+    def __init__(self, vehicle_id, amount, location, description):
         self.creation_time = time.time()
         self.vehicle_id = vehicle_id
         self.location = location

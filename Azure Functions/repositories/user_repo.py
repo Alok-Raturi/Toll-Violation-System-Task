@@ -1,7 +1,7 @@
 # Class to communicate with user container
 from utils.db_connection import user_container
 from models.user_model import User
-from utils.password import hash_password
+from utils.password import hash_password, check_password
 
 class UserRepo:
     def __init__(self):
@@ -46,3 +46,17 @@ class UserRepo:
         else:
             # Owner already exists
             return True    
+        
+    def login(self, email, password):
+
+        query = "SELECT * FROM c WHERE c.email = @email"
+        items = list(user_container.query_items(
+            query=query,
+            parameters=[
+                {"name":"@email", "value":email}
+            ]
+        ))   
+        if len(items) == 0 or not check_password(password, items[0]['password']):
+            return False
+        else:
+            return items

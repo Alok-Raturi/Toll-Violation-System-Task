@@ -2,6 +2,7 @@ from repositories.user_repo import UserRepo
 from models.user_model import User
 from utils.password import check_password_strength, PASSWORD_CONSTRAINT
 from utils.send_email import send_email
+from utils.jwt_decode import encode_token
 from email_validator import validate_email
 import azure.functions as func
 import logging
@@ -56,4 +57,24 @@ class UserService:
             status_code=201
         )
 
-
+    def login(self, email, password):
+        is_login = self.user_repo.login(email, password)
+        if is_login == False:
+            logging.error("Invalid email or password")
+            return func.HttpResponse(
+                json.dumps("Invalid email or password"),
+                status_code = 404 
+            )
+        logging.warning("Login Successful")
+        token = encode_token({
+            "email" : email,
+            "designation" : is_login[0]['designation'],
+            "id" : is_login[0]['id']
+        })
+        logging.warning("Access Token generated")
+        return func.HttpResponse(
+            json.dumps({
+                "access_token" : token
+            }),
+            status_code = 200
+        )

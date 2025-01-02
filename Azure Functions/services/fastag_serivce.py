@@ -1,5 +1,8 @@
-from repositories.fastag_repo import FastagRepo
+from repositories.transaction_repo import TransactionRepo
 from repositories.vehicle_repo import VehicleRepo
+from repositories.fastag_repo import FastagRepo
+from repositories.user_repo import UserRepo
+from models.transaction_model import Transaction
 from models.fastag_model import Fastag
 from utils.send_email import send_email
 import logging
@@ -29,7 +32,6 @@ class FastagService:
                 json.dumps("Fastag already exists"),
                 status_code = 404
             )
-        
         
         # Checking whether vehicle exists 
         vehicle_repo = VehicleRepo()
@@ -77,4 +79,55 @@ class FastagService:
             status_code=201
         )
 
+    def get_balance(self, tag_id):
+        if not self.fastag_repo.does_fastag_exists(tag_id):
+            return func.HttpResponse(
+                json.dumps("No Fastag with this id"),
+                status_code = 404
+            )
+        balance = self.fastag_repo.get_balance(tag_id)
+        return func.HttpResponse(
+            json.dumps(balance),
+            status_code = 200
+        )
+    
+    def get_fastags(self, email):
+        user_repo = UserRepo()
+        if not user_repo.does_user_exists(email):
+            logging.error("No user with this email")
+            return func.HttpResponse(
+                json.dumps("No user with this email"),
+                status_code = 404
+            )
+        fastags = self.fastag_repo.get_fastags(email)
+        if not fastags:  # equivalent to if len(fastags) == 0
+            logging.error("No Fastags found")
+            return func.HttpResponse(
+                json.dumps("No Fastags found"),
+                status_code = 404
+            )
+        return func.HttpResponse(
+            json.dumps(fastags),
+            status_code = 200
+        )
 
+    def recharge(self, tag_id : str, amount : int):
+        fastag_details = self.fastag_repo.does_fastag_exists(tag_id)
+        if not fastag_details:
+            logging.warning("No fastag with this id")
+            return func.HttpResponse(
+                json.dumps("No fastag with this id"),
+                status_code = 404
+            )
+        updated_balance = fastag_details[0]['balance'] + amount
+        self.fastag_repo.set_balance(tag_id, updated_balance, fastag_details[0]['vehicleId'])
+
+        new_transaction = Transaction(tag_id, 'credit', amount, 'online', 'recharge')
+        transaction_repo = TransactionRepo()
+        transaction_repo.create_transaction(new_transaction)
+
+        logging.warning("Recharge Successful")
+        return func.HttpResponse(
+            json.dumps("Recharge Successful"),
+            status_code = 200
+        )

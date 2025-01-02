@@ -1,5 +1,6 @@
 from bcrypt import hashpw, gensalt, checkpw
 import re
+import logging
 
 PASSWORD_REGEX = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,20}$"
 
@@ -16,7 +17,8 @@ Your password:\n
 def hash_password(password: str) -> str:            
     return hashpw(password.encode('utf-8'), gensalt()).decode('utf-8')        
 
-def check_password(password: str, hashed_password: str) -> bool:               
+def check_password(password: str, hashed_password: str) -> bool:     
+    logging.warning("Checking password")          
     return checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 def check_password_strength(password: str) -> bool:
