@@ -11,6 +11,7 @@ pipeline {
         string(name: 'CON_STR', defaultValue: 'DefaultEndpointsProtocol=https;AccountName=statestoragetf;AccountKey=TgiUprX44G1FDdRwhKoX0HBCrfZ9ByeOqIqSAvjL2S4MPzcv/QP0+ZnX15erlDgHo3uxlhznwBzQ+AStm4Fz7w==;EndpointSuffix=core.windows.net', description: 'Connection String')
         string(name: 'FUNC_NAME', defaultValue: 'raturifunctionapp', description: 'Name of the functions')
         string(name: 'RES_GRP_NAME', defaultValue: 'Function-App-RG-Alok-Raturi', description: 'Name of the Resource that contains your Function')
+        string(name: 'PVT_KEY', defaultValue: '-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDDW+zlhkJWFM7l\n3wogfndf/9a4qQpXaPWLbRFSyGOJ3CyiizMVx8oCFyDNwjOf3gVR3Kr+wumRJUdr\n+2yQkKP+djal9WGKqG3+teh+AhzOa4vMJZUJHD4X2LMk7sPKWJm9ZS5F3BUYakSe\n5ZBQdzc7PP4ClLnoOI3GXVijj5LWIBX5MNaXWqtobS8uk3fFW8uqF7hN2BWeL/I/\n1n25FIez5StBRvOyXxQw6WlbiIXcnAoSXajwBjqPYYElhj9M3mL3LkZERA0KOKmB\n9UHrXlvQuGwvqM+qz1A4JcVjRzJCqI2Z0BkOeuuzRPpjq1nLO32DKDBslZGi+Rz8\n1P99/0ExAgMBAAECggEAJcAFrvSarPeoY1MOKelGOA6/9z7y+KEXkbGpv01prqIV\nHfO4E2Vf67d8Z0Y3o5TLgl4ZzNDtQVbqzjrvZ6ALkIhXVwprpteVKbsNCgxudJTj\nlrdMbU4/0WvWcjSRMPCeBLMgle9JREaErA/AK0xeJ9xJWUZUBkOnYcV382MzBJ0n\npp4dl8T8KrgQuvn1yVR6Va+BO+Q0EOnjZSP4NmqcQ0XYy4CjoBUmYO57TYnU117q\nsoWrMTDbbd+3p1s41ojjgwNNF4bDpCVBz5mwq3SQ+6eIEjzsQigYkMQ2LZiLaDS8\nDkattNFe9ZXSLxrjKMP/oKoToL+KqE5gIkNgKEh4gQKBgQDHu3cZgu/zqgcjqde3\nEzOr32tIZRi4mjUB44iIpOOeUCOwqZmqnmryiBnNu7+4mMlJvrvN0QIyyp4m7ChP\nbeC9j2TvclcKZ7pVmdFCXUF8h2eU3KjIS5wHN2fvS7p1XbZK27hIhuNkF98/4bAE\nABxrl+wsT5HcjiC27EpHf1t6ZQKBgQD6ZRF3bAQb2nO4qEHNPlIYy0iEYPS7MaBK\nIkKwyRjC8YpAL1byDxYfmIp39wIp57rGcWGJzMfwgb+Fa+03Jz50Kgi7BzcDYm9U\nSzQAvq8jNB7Le6bz0pRC1xVY4rGW4BeIDw8AU9xYaAk6+WOY/pCWmGZ2EU6DmUWM\ns85uA/a43QKBgQCReCQCXK9PFKMmgmkuWbnkkFCe5aLfsNCyk3m5q/5sK4oS/TOC\nZOcXxbClevzkAcN5BoXaHUQwogoV5yJk1248Idgt3WUvmuTHu8QBRdKQVD5I2X3E\ng+0cBGqaitk+6gX+95B8omGzYP+kk0eTYlFQu9GzZDCkJpAFKovfDw8dUQKBgDRK\nIumjfwAqEHyBdqxb1V0kJpKuhK0K4gRZP0AX3rnnIw3gVPHbwKz8d/4xcRw7Lj/+\nsXXLc/1/uvUr4q/f3CT6GjSkfxKP3dvmkIePSpe5bKzlt6m3UgrbS7PyM0/koEVj\nj6hr2toDb9oG9oueraclUFBbsN++hE2rxvImlcFpAoGBAL+uD1ULUXiQ6rH8jQUY\n5LFzV/vFp5xwFpUPkYFkN3o/3t+1R1Wlv3chHjWbaH4PcfRL9jVEFHLSlIslkQ1D\nfo2YBWl0q0xA7oEm8SYlq4C4K4iOPQRpjX2BNXLa7WHTPVWpbjzlskDm+s1x3jql\nmS6ddlwjUy5m2dKtmLCBfs8z\n-----END PRIVATE KEY-----\n', description: 'Private Key for RSA')
     }
     stages {
         stage('terraform init') {
@@ -52,12 +53,13 @@ pipeline {
                     echo 'Terraform Plan Stage'
                     withCredentials([azureServicePrincipal(credentialsId:'AZURE_CRED',subscriptionIdVariable: 'AZURE_SUBSCRIPTION_ID',clientIdVariable: 'AZURE_CLIENT_ID',clientSecretVariable: 'AZURE_CLIENT_SECRET',tenantIdVariable: 'AZURE_TENANT_ID')]) { 
                         sh '''
-                          terraform -chdir='Terraform IAC' \
+                          terraform -chdir="Terraform IAC" plan \
                           -var "blob_url=$BLOB_URL" \
                           -var "subscription_id=$AZURE_SUBSCRIPTION_ID" \
                           -var "tenant_id=$AZURE_TENANT_ID" \
                           -var "client_id=$AZURE_CLIENT_ID" \
                           -var "client_secret=$AZURE_CLIENT_SECRET" \
+                          -var 'PRIVATE_KEY=${params.PVT_KEY}' \
                         -out=tfplan
                         '''
                     }
@@ -70,12 +72,13 @@ pipeline {
                     echo 'Terraform Apply Stage'
                     withCredentials([azureServicePrincipal('AZURE_CRED')]) {
                         sh '''
-                          terraform -chdir='Terraform IAC' \
+                          terraform -chdir='Terraform IAC' apply\
                           -var "blob_url=$BLOB_URL" \
                           -var "subscription_id=$AZURE_SUBSCRIPTION_ID" \
                           -var "tenant_id=$AZURE_TENANT_ID" \
                           -var "client_id=$AZURE_CLIENT_ID" \
                           -var "client_secret=$AZURE_CLIENT_SECRET" \
+                          -var 'PRIVATE_KEY=${params.PVT_KEY}' \
                         -auto-approve
                         '''
                     }
