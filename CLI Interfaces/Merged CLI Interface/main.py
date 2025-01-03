@@ -56,18 +56,14 @@ def show_menu(menu_options):
     return input("Enter your choice: ")
 
 def validate_amount(amount):
-    try:
+    # try:
         if not amount.isnumeric():
             print("\nInvalid Amount. Please enter a valid amount.\n")
-            return None
-        amount = float(amount)
-        if amount <= 0:
-            print("\nAmount must be greater than zero.\n")
-            return None
+            return False
         return amount
-    except ValueError:
-        print("\nInvalid amount. Please enter a valid number.\n")
-        return None
+    # except ValueError:
+    #     print("\nInvalid amount. Please enter a valid number.\n")
+    #     return False
 
 def TollPlaza(toll_user):
     while True:
@@ -96,19 +92,20 @@ def TollPlaza(toll_user):
             tag_id = input("\nEnter FASTag ID: ")
             response = toll_user.view_fastag_balance(tag_id)
             if response['status_code'] == 200:
-                print("Remaining Balance: ",response['body']['balance'])
+                print("Remaining Balance: ",response['body'])
             else:
                 print('\n', response['body'])
             continue
         elif login_choice == '3':
             print("\n-----------------  SCAN VEHICLE  -----------------")
             vehicle_id = input("\nEnter Vehicle ID: ") 
+            toll_location = input("Enter toll plaza's location: ")
             passage_amount = input("Enter Passage Amount for Vehicle: ").strip()
 
             while not passage_amount.isnumeric():
                 passage_amount = input("\nEnter valid Passage Amount: ").strip()
 
-            response = toll_user.vehicle_entry_at_toll(vehicle_id, passage_amount)
+            response = toll_user.vehicle_entry_at_toll(vehicle_id, passage_amount, toll_location)
             if response['status_code'] == 200:
                 print(response['body'])
             else:
@@ -120,8 +117,8 @@ def TollPlaza(toll_user):
             print("\n-----------------  Logout Successful  -----------------\n")
             break
         else:
-            print("Invalid Choice !  ABORTING")
-            login_choice = input("Enter your choice again: ").strip()
+            print("Invalid Choice!")
+            # login_choice = input("Enter your choice again: ").strip()
 
 
 def PoliceUser(traffic_police):
@@ -190,9 +187,11 @@ def main_app():
             response = decode_token(ACCESS_TOKEN)
             if response['designation'] == 'police':
                 traffic_police = Traffic_Police(TEST_BASE_TOLL_URL,ACCESS_TOKEN)
+                print("\n---------- Logged in as Police ----------\n")
                 PoliceUser(traffic_police)
             elif response['designation'] == 'toll':
                 toll_user = TollPlazaPerson(TEST_BASE_TOLL_URL,ACCESS_TOKEN)
+                print("\n---------- Logged in as Toll Plaza Person ----------\n")
                 TollPlaza(toll_user)
             else:
                 print("Invalid designation")

@@ -8,20 +8,20 @@ import { tap } from 'rxjs';
   providedIn: 'root',
 })
 export class AuthService {
-  private APIRoute = 'https://raturifunctionapp.azurewebsites.net/api/user/';
+  private APIRoute = 'http://localhost:7071/api/';
   email: string = '';
   accessToken: string = '';
 
   constructor(private httpClient: HttpClient,private toast: ToastrService ) {}
   fetchVehicles() {
-    return this.httpClient.get(this.APIRoute + 'get-vehicles', {
+    return this.httpClient.get(this.APIRoute + 'user/get-vehicles', {
       headers: new HttpHeaders().set('Authorization', this.accessToken),
     });
   }
 
   fetchChallan(vid: string) {
     return this.httpClient.get(
-      this.APIRoute + 'get-challan-by-vehicles/' + vid,
+      this.APIRoute + 'user/get-challans/' + vid,
       {
         headers: new HttpHeaders().set('Authorization', this.accessToken),
       }
@@ -29,7 +29,7 @@ export class AuthService {
   }
 
   fetchFastTag() {
-    return this.httpClient.get(this.APIRoute + 'get-fastags', {
+    return this.httpClient.get(this.APIRoute + 'user/get-fastags', {
       headers: new HttpHeaders().set('Authorization', this.accessToken),
     });
   }
@@ -37,7 +37,7 @@ export class AuthService {
   rechargeFastTag(tag_id: string, balance: number) {
     this.toast.info("Recharge payment processing......")
     return this.httpClient.post(
-      this.APIRoute + 'recharge-fastag/' + tag_id,
+      this.APIRoute + 'user/recharge-fastag/' + tag_id,
       {
         amount: balance,
       },
@@ -47,7 +47,7 @@ export class AuthService {
     ).pipe(tap(
       {
         next:(data:any)=>{
-          this.toast.success("Successfully done recharge. Updated balance: "+data?.balance as string)
+          this.toast.success("Successfully done recharge.")
         },
         error:(err)=>{
           this.toast.error(err.error)
@@ -58,7 +58,7 @@ export class AuthService {
 
   fetchHistory(tagId: string) {
     return this.httpClient.get(
-      this.APIRoute + 'get-transaction-history/' + tagId,
+      this.APIRoute + 'user/get-transaction-history/' + tagId,
       {
         headers: new HttpHeaders().set('Authorization', this.accessToken),
       }
@@ -146,7 +146,7 @@ export class AuthService {
 
   payAllChallan(vehicleId:string){
     this.toast.info("Paying from your associated fastag......")
-    return this.httpClient.post(this.APIRoute + 'pay-all-challan/' + vehicleId,{},{
+    return this.httpClient.post(this.APIRoute + 'user/pay-all-challan/' + vehicleId,{},{
       headers: new HttpHeaders().set('Authorization', this.accessToken)
     }).pipe(tap(
       {
@@ -162,7 +162,7 @@ export class AuthService {
 
   paySingleChallan(challanId:string){
     this.toast.info("Paying from your associated fastag......")
-    return this.httpClient.post(this.APIRoute + 'pay-a-challan/' + challanId,{},{
+    return this.httpClient.post(this.APIRoute + 'user/pay-a-challan/' + challanId,{},{
       headers: new HttpHeaders().set('Authorization', this.accessToken)
     }).pipe(tap(
       {
