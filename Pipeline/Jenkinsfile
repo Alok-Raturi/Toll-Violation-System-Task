@@ -7,17 +7,17 @@ pipeline {
     parameters {
         string(name: 'ACCESS_KEY_BACKEND', defaultValue: 'TgiUprX44G1FDdRwhKoX0HBCrfZ9ByeOqIqSAvjL2S4MPzcv/QP0+ZnX15erlDgHo3uxlhznwBzQ+AStm4Fz7w==', description: 'State Storage for Terraform Backend')
         string(name: 'STORAGE_ACCOUNT_NAME', defaultValue: 'statestoragetf', description: '')
-        string(name: 'CONTAINER_NAME', defaultValue: 'test-terraform-container', description: '')
+        string(name: 'CONTAINER_NAME', defaultValue: 'terraform-state-storage', description: '')
         string(name: 'CON_STR', defaultValue: 'DefaultEndpointsProtocol=https;AccountName=statestoragetf;AccountKey=TgiUprX44G1FDdRwhKoX0HBCrfZ9ByeOqIqSAvjL2S4MPzcv/QP0+ZnX15erlDgHo3uxlhznwBzQ+AStm4Fz7w==;EndpointSuffix=core.windows.net', description: 'Connection String')
-        string(name: 'FUNC_NAME', defaultValue: 'rautelarahul124', description: 'Name of the functions')
-        string(name: 'RES_GRP_NAME', defaultValue: 'first-test-resources', description: 'Name of the Resource that contains your Function')
+        string(name: 'FUNC_NAME', defaultValue: 'raturifunctionapp', description: 'Name of the functions')
+        string(name: 'RES_GRP_NAME', defaultValue: 'Function-App-RG-Alok-Raturi', description: 'Name of the Resource that contains your Function')
     }
     stages {
         stage('terraform init') {
             steps {
                 script {
                     echo 'Init Stage'
-                    sh "echo 'yes' | terraform -chdir=IAC init -backend-config access_key=${params.ACCESS_KEY_BACKEND}"
+                    sh "echo 'yes' | terraform -chdir='Terraform IAC' init -backend-config access_key=${params.ACCESS_KEY_BACKEND}"
                 }
             }
         }
@@ -52,7 +52,7 @@ pipeline {
                     echo 'Terraform Plan Stage'
                     withCredentials([azureServicePrincipal(credentialsId:'AZURE_CRED',subscriptionIdVariable: 'AZURE_SUBSCRIPTION_ID',clientIdVariable: 'AZURE_CLIENT_ID',clientSecretVariable: 'AZURE_CLIENT_SECRET',tenantIdVariable: 'AZURE_TENANT_ID')]) { 
                         sh '''
-                          terraform -chdir=IAC plan \
+                          terraform -chdir='Terraform IAC' \
                           -var "blob_url=$BLOB_URL" \
                           -var "subs_id=$AZURE_SUBSCRIPTION_ID" \
                           -var "tenant_id=$AZURE_TENANT_ID" \
@@ -70,7 +70,7 @@ pipeline {
                     echo 'Terraform Apply Stage'
                     withCredentials([azureServicePrincipal('AZURE_CRED')]) {
                         sh '''
-                          terraform -chdir=IAC apply \
+                          terraform -chdir='Terraform IAC' \
                           -var "blob_url=$BLOB_URL" \
                           -var "subs_id=$AZURE_SUBSCRIPTION_ID" \
                           -var "tenant_id=$AZURE_TENANT_ID" \
