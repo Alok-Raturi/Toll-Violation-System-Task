@@ -24,7 +24,7 @@ pipeline {
         stage('Package Function Code') {
             steps {
                echo 'zipping function code'
-                sh 'cd Functions ;zip -r  ../function-code.zip ./*;zip -r ../function-code.zip .funcignore;cd ..'
+                sh 'cd "Azure Functions" ;zip -r  ../function-code.zip ./*;zip -r ../function-code.zip .funcignore;cd ..'
             }
         }
         stage('Upload to Azure Storage') {
