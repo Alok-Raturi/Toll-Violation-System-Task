@@ -7,8 +7,11 @@ CHALLAN_CONTAINER = "Challan-Table"
 FASTAG_CONTAINER = "Fastag-Table"
 TRANSACTION_CONTAINER = "Transaction-Table"
 
-COSMOS_DB_ENDPOINT = ""
-COSMOS_DB_KEY = ""
+# COSMOS_DB_ENDPOINT = ""
+# COSMOS_DB_KEY = ""
+
+COSMOS_DB_ENDPOINT = "https://tollviolationdbmsraturi.documents.azure.com:443/"
+COSMOS_DB_KEY = "tWGABrro8rdalUrWmaBJv0x58MD44ELL197DqSTfMrBX9Y2NvFdZmwmPtDRzFUxWefpO8w4LziAtACDbPK4SHA=="
 
 client = CosmosClient(COSMOS_DB_ENDPOINT, COSMOS_DB_KEY)
 
