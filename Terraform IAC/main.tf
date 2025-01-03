@@ -5,6 +5,9 @@ provider "azurerm" {
     }
   }
   subscription_id = var.subscription_id
+  tenant_id = var.tenant_id
+  client_id = var.client_id
+  client_secret = var.client_secret
 }
 
 # Resource Group
@@ -162,6 +165,7 @@ resource "azurerm_linux_function_app" "function_app_toll_violation_system"{
     "SENDER_DOMAIN": "${azurerm_email_communication_service_domain.toll_email_communication_service_domain.from_sender_domain}",
     "SENDER_DOMAIN_MAIL": "${azurerm_email_communication_service_domain.toll_email_communication_service_domain.mail_from_sender_domain}",
     "PRIVATE_KEY": var.PRIVATE_KEY
+    "WEBSITE_RUN_FROM_PACKAGE" = var.blob_url
   }
 
   site_config {

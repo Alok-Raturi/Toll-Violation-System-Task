@@ -4,6 +4,22 @@ variable "subscription_id" {
   type = string
 }
 
+variable "tenant_id" {
+  description = "The Tenant ID for the target Azure Account"
+#  default = "46118836-cde0-431b-bb1e-b6ab7887003c"
+  type = string
+}
+variable "client_id" {
+  description = "Client ID for the Application"
+#  default= "20c516e5-a70b-4ebc-bbed-4f2dd86c3141"
+  type = string
+}
+variable "client_secret" {
+  description = "Client Secret"
+#  default="bH18Q~9cOEq7OH1m3jxXHSOwg_PjSYn38IM9Saik"
+  type = string
+}
+
 variable "region" {
   description = "The region in which the resources will be created."
   default     = "East US"
@@ -109,4 +125,10 @@ variable "python_version" {
 # PUBLIC and Private key
 variable "PRIVATE_KEY" {
   type = string
+}
+
+# Blob URL for the function code
+variable "blob_url" {
+description = "Blob link for Function Deployment"
+type = string
 }
