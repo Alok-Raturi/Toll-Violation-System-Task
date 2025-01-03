@@ -1,0 +1,96 @@
+pipeline {
+    agent any
+    tools {
+        terraform 'Terraform-Jenkins'
+    }
+
+    parameters {
+        string(name: 'ACCESS_KEY_BACKEND', defaultValue: 'TgiUprX44G1FDdRwhKoX0HBCrfZ9ByeOqIqSAvjL2S4MPzcv/QP0+ZnX15erlDgHo3uxlhznwBzQ+AStm4Fz7w==', description: 'State Storage for Terraform Backend')
+        string(name: 'STORAGE_ACCOUNT_NAME', defaultValue: 'statestoragetf', description: '')
+        string(name: 'CONTAINER_NAME', defaultValue: 'test-terraform-container', description: '')
+        string(name: 'CON_STR', defaultValue: 'DefaultEndpointsProtocol=https;AccountName=statestoragetf;AccountKey=TgiUprX44G1FDdRwhKoX0HBCrfZ9ByeOqIqSAvjL2S4MPzcv/QP0+ZnX15erlDgHo3uxlhznwBzQ+AStm4Fz7w==;EndpointSuffix=core.windows.net', description: 'Connection String')
+        string(name: 'FUNC_NAME', defaultValue: 'rautelarahul124', description: 'Name of the functions')
+        string(name: 'RES_GRP_NAME', defaultValue: 'first-test-resources', description: 'Name of the Resource that contains your Function')
+    }
+    stages {
+        stage('terraform init') {
+            steps {
+                script {
+                    echo 'Init Stage'
+                    sh "echo 'yes' | terraform -chdir=IAC init -backend-config access_key=${params.ACCESS_KEY_BACKEND}"
+                }
+            }
+        }
+        stage('Package Function Code') {
+            steps {
+               echo 'zipping function code'
+                sh 'cd Functions ;zip -r  ../function-code.zip ./*;zip -r ../function-code.zip .funcignore;cd ..'
+            }
+        }
+        stage('Upload to Azure Storage') {
+            steps {
+                echo 'Uploading Function code to storage account'
+                script {
+                    sh "az storage blob upload --connection-string '${params.CON_STR}' --account-name ${params.STORAGE_ACCOUNT_NAME} --container-name ${params.CONTAINER_NAME} --file function-code.zip --name function-code.zip --overwrite --query 'url' -o tsv"
+                    env.DATE_END = sh(script: "date -u -d '+1 month' '+%Y-%m-%dT%H:%MZ'", returnStdout: true).trim()
+                    def uploadCommand = """
+                    az storage blob generate-sas \
+                        --connection-string '${params.CON_STR}' \
+                        --container-name '${params.CONTAINER_NAME}' \
+                        --name function-code.zip \
+                        --expiry '${DATE_END}' \
+                        --permissions acdeimrtwxy \
+                        --full-uri
+                    """
+                    env.BLOB_URL = sh(script:uploadCommand, returnStdout: true).trim().replaceAll('^"|"$', '')
+                }
+            }
+        }     
+        stage('terraform plan') {
+            steps {
+                script {
+                    echo 'Terraform Plan Stage'
+                    withCredentials([azureServicePrincipal(credentialsId:'AZURE_CRED',subscriptionIdVariable: 'AZURE_SUBSCRIPTION_ID',clientIdVariable: 'AZURE_CLIENT_ID',clientSecretVariable: 'AZURE_CLIENT_SECRET',tenantIdVariable: 'AZURE_TENANT_ID')]) { 
+                        sh '''
+                          terraform -chdir=IAC plan \
+                          -var "blob_url=$BLOB_URL" \
+                          -var "subs_id=$AZURE_SUBSCRIPTION_ID" \
+                          -var "tenant_id=$AZURE_TENANT_ID" \
+                          -var "client_id=$AZURE_CLIENT_ID" \
+                          -var "client_secret=$AZURE_CLIENT_SECRET" \
+                        -out=tfplan
+                        '''
+                    }
+                }
+            }
+        }
+        stage('terraform apply') {
+            steps {
+                script {
+                    echo 'Terraform Apply Stage'
+                    withCredentials([azureServicePrincipal('AZURE_CRED')]) {
+                        sh '''
+                          terraform -chdir=IAC apply \
+                          -var "blob_url=$BLOB_URL" \
+                          -var "subs_id=$AZURE_SUBSCRIPTION_ID" \
+                          -var "tenant_id=$AZURE_TENANT_ID" \
+                          -var "client_id=$AZURE_CLIENT_ID" \
+                          -var "client_secret=$AZURE_CLIENT_SECRET" \
+                        -auto-approve
+                        '''
+                    }
+                }
+            }
+        }
+        stage('cleanup') {
+            steps {
+                cleanWs()
+            }
+        }
+    }
+post {
+        always {
+            echo 'Deployment finished.'
+        }
+    }
+}
