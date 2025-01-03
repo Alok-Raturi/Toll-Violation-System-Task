@@ -1,14 +1,18 @@
-from models.vehicle_model import Vehicle
+
 import azure.functions as func
 from services.transaction_service import TransactionRepo
 from repositories.vehicle_repo import VehicleRepo
 from repositories.challan_repo import ChallanRepo
 from repositories.fastag_repo import FastagRepo
 from repositories.user_repo import UserRepo
-from models.transaction_model import Transaction
-from utils.send_email import send_email
+
+from database.models import Vehicle,Transaction
+
+from helper.send_email import send_email
 import json
 import logging
+import datetime
+import pytz
 
 VEHICLE_ISSUED_SUBJECT = "Thank you for purchasing a vehicle"
 VEHICLE_ISSUED_BODY = """
@@ -27,7 +31,6 @@ class VehicleService:
         self.vehicle_repo = VehicleRepo()
 
     def create_vehicle(self, vehicle: Vehicle):
-
         user_repo = UserRepo()
         if not user_repo.does_vehicle_owner_exists(vehicle.email):
             # User does not exist
@@ -62,8 +65,6 @@ class VehicleService:
         )
 
     def scan_vehicle(self, vehicle_id, passage_amount, toll_location):
-
-        # Validating Vehicle
         vehicle_details = self.vehicle_repo.does_vehicle_exists(vehicle_id)
         if not vehicle_details:
             logging.error("No Vehicle with this id")
@@ -116,15 +117,11 @@ class VehicleService:
             if remaining_balance >= passage_amount:
                 logging.warning('Case 1 - a')
                 
-                # Create Transaction
-                new_transaction = Transaction(
-                    tag_id = tag_id, 
-                    type = 'debit', 
-                    amount = passage_amount, 
-                    location = toll_location, 
-                    description = 'Toll Plaza Payment'
-                )
-                transaction_repo.create_transaction(new_transaction)
+                timestamp = str(datetime.datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S"))
+
+                new_transaction = Transaction(tag_id=tag_id,type='debit', amount=challan['amount'], timestamp=timestamp,description="toll plaza payment",location=toll_location)
+                self.transaction_repo.create_transaction(new_transaction)
+
                 
                 # Update fastag balance
                 fastag_repo.set_balance(
@@ -158,23 +155,15 @@ class VehicleService:
             # Settle overdue challans
             challan_repo.settle_all_overdue_challans(challans, vehicle_id)
 
-            new_transaction = Transaction(
-                tag_id = tag_id, 
-                type = 'debit', 
-                amount = total, 
-                location = toll_location, 
-                description = 'Forced overdue challan payment'
-            )
-            transaction_repo.create_transaction(new_transaction)
+            timestamp = str(datetime.datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S"))
 
-            new_transaction = Transaction(
-                tag_id = tag_id, 
-                type = 'debit', 
-                amount = passage_amount, 
-                location = toll_location, 
-                description = 'Toll Plaza Payment'
-            )
-            transaction_repo.create_transaction(new_transaction)
+            new_transaction = Transaction(tag_id=tag_id,type='debit', amount=total, timestamp=timestamp,description="forced overdue challan payment",location=toll_location)
+            self.transaction_repo.create_transaction(new_transaction)
+
+            timestamp = str(datetime.datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S"))
+
+            new_transaction = Transaction(tag_id=tag_id,type='debit', amount=passage_amount, timestamp=timestamp,description="toll plaza payment",location=toll_location)
+            self.transaction_repo.create_transaction(new_transaction)
 
             fastag_repo.set_balance(
                 tag_id, 
@@ -190,15 +179,10 @@ class VehicleService:
         elif remaining_balance >= passage_amount:
             # Deduct passage amount, block fastag and pass
             logging.warning('Case 2 - b')
-            
-            new_transaction = Transaction(
-                tag_id = tag_id, 
-                type = 'debit', 
-                amount = passage_amount, 
-                location = toll_location, 
-                description = 'Toll Plaza Payment'
-            )
-            transaction_repo.create_transaction(new_transaction)
+            timestamp = str(datetime.datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S"))
+
+            new_transaction = Transaction(tag_id=tag_id,type='debit', amount=passage_amount, timestamp=timestamp,description="toll plaza payment",location=toll_location)
+            self.transaction_repo.create_transaction(new_transaction)
 
             fastag_repo.set_balance(
                 tag_id, 

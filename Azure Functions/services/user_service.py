@@ -1,12 +1,11 @@
 from repositories.user_repo import UserRepo
-from models.user_model import User
-from utils.password import check_password_strength, PASSWORD_CONSTRAINT
-from utils.send_email import send_email
+from database.models import User
+from helper.send_email import send_email
 from utils.jwt_decode import encode_token
-from email_validator import validate_email
 import azure.functions as func
 import logging
 import json
+from database.models import LoginModel
 
 USER_CREATED_SUBJECT = "You are successfully registered"
 USER_CREATED_BODY = """
@@ -24,15 +23,6 @@ class UserService:
         self.user_repo = UserRepo()
 
     def create_user(self, user: User):
-        # Email validation
-        validate_email(user.email)
-        # Password strength validtion
-        if not check_password_strength(user.password):
-            logging.error("Password Constraint")
-            return func.HttpResponse(
-                json.dumps(PASSWORD_CONSTRAINT),
-                status_code=404
-            )
         if self.user_repo.does_user_exists(user.email):
             logging.error("User already exists")
             return func.HttpResponse(
@@ -57,8 +47,8 @@ class UserService:
             status_code=201
         )
 
-    def login(self, email, password):
-        is_login = self.user_repo.login(email, password)
+    def login(self,login_info:LoginModel):
+        is_login = self.user_repo.login(login_info)
         if is_login == False:
             logging.error("Invalid email or password")
             return func.HttpResponse(
@@ -67,7 +57,7 @@ class UserService:
             )
         logging.warning("Login Successful")
         token = encode_token({
-            "email" : email,
+            "email" : login_info.email,
             "designation" : is_login[0]['designation'],
             "id" : is_login[0]['id']
         })

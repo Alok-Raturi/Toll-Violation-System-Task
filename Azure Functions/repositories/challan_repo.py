@@ -1,5 +1,5 @@
-from utils.db_connection import challan_container
-from models.challan_model import Challan
+from database.connection import challan_container
+from database.models import Challan
 import time
 import logging
 
@@ -14,10 +14,10 @@ class ChallanRepo:
             "amount": challan.amount,
             "location": challan.location,
             "description": challan.description,
-            "date": challan.creation_time,
+            "date": challan.date,
             "due_time": challan.due_time,
             "status": challan.status,
-            "settlement_date": challan.settlement_time
+            "settlement_date": challan.settlement_date
         }, enable_automatic_id_generation=True
         )
 
@@ -63,23 +63,6 @@ class ChallanRepo:
         )
         logging.warning("Paid a challan")
         
-    def pay_all_challans(self, challans, vehicle_id):
-        settlement_time = time.time()
-        operations = [
-            {"op":"replace", "path":"/status", "value": "settled"},
-            {"op":"replace", "path":"/settlement_date", "value": settlement_time}
-        ]
-        is_paid = False
-        for challan in challans:
-            if challan['status'] == "unsettled":
-                is_paid = True
-                challan_container.patch_item(
-                    item = challan['id'],
-                    patch_operations=operations,
-                    partition_key=vehicle_id
-                )
-        logging.warning("Paid all challans")    
-        return is_paid
 
     def settle_all_overdue_challans(self, unsettled_overdue_challans, vehicle_id):
         settlement_time = time.time()
@@ -105,5 +88,16 @@ class ChallanRepo:
             ],
             enable_cross_partition_query=True
         ))
+        return items
+    
+    def get_all_unsettled_challan(self,vehicle_id):
+        query = "SELECT * FROM c WHERE c.vehicleId = @vehicleId AND c.status = 'unsettled'"
+        items = list(challan_container.query_items(
+            query=query,
+            parameters=[
+                {"name": "@vehicleId", "value": vehicle_id},
+            ],
+            enable_cross_partition_query=True
+        )) 
         return items
     

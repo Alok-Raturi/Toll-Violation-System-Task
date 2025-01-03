@@ -12,6 +12,6 @@ def user_middleware(token:str, designation: str):
             return False
         if data['exp'] < time.time():
             return False
-        return True
+        return data
     except JWTError:
         return False

@@ -1,5 +1,5 @@
-from utils.db_connection import fastag_container
-from models.fastag_model import Fastag
+from database.connection import fastag_container
+from database.models import Fastag
 import logging
 
 class FastagRepo:
@@ -76,6 +76,17 @@ class FastagRepo:
             query=query,
             parameters=[
                 {"name":"@email","value":email}
+            ],
+            enable_cross_partition_query=True
+        ))
+        return items
+    
+    def get_fastag_by_vehicle(self,vehicle_id):
+        query = "SELECT * FROM c WHERE c.vehicleId = @vehicleId"
+        items = list(fastag_container.query_items(
+            query=query,
+            parameters=[
+                {"name":"@vehicleId","value":vehicle_id}
             ],
             enable_cross_partition_query=True
         ))

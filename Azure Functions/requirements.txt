@@ -5,3 +5,5 @@ email_validator
 python-jose
 azure-communication-email
 bcrypt
+pydantic
+pytz

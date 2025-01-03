@@ -143,6 +143,7 @@
 /Azure Function/obj
 /Azure Function/appsettings.json
 /Azure Function/local.settings.json
+/Azure Function/.env
 
 # Azurite artifacts
 /Azure Function/__blobstorage__

@@ -1,7 +1,8 @@
-# Class to communicate with user container
-from utils.db_connection import user_container
-from models.user_model import User
+from database.connection import user_container
+from database.models import User
 from utils.password import hash_password, check_password
+from database.models import LoginModel
+
 
 class UserRepo:
     def __init__(self):
@@ -25,12 +26,7 @@ class UserRepo:
                 {"name":"@email", "value":email}
             ]
         ))
-        if len(items) == 0:
-            # User doesn't exists
-            return False
-        else:
-            # User already exists
-            return True
+        return len(items)
         
     def does_vehicle_owner_exists(self, email) -> bool:
         query = "SELECT * FROM c WHERE c.email = @email AND c.designation = 'user'"
@@ -40,23 +36,17 @@ class UserRepo:
                 {"name":"@email", "value":email}
             ]
         ))
-        if len(items) == 0:
-            # Owner doesn't exists
-            return False
-        else:
-            # Owner already exists
-            return True    
+        return len(items)
         
-    def login(self, email, password):
-
+    def login(self, login_info: LoginModel):
         query = "SELECT * FROM c WHERE c.email = @email"
         items = list(user_container.query_items(
             query=query,
             parameters=[
-                {"name":"@email", "value":email}
+                {"name":"@email", "value":login_info.email}
             ]
         ))   
-        if len(items) == 0 or not check_password(password, items[0]['password']):
+        if len(items) == 0 or not check_password(login_info.password, items[0]['password']):
             return False
         else:
             return items

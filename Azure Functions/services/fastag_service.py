@@ -2,12 +2,14 @@ from repositories.transaction_repo import TransactionRepo
 from repositories.vehicle_repo import VehicleRepo
 from repositories.fastag_repo import FastagRepo
 from repositories.user_repo import UserRepo
-from models.transaction_model import Transaction
-from models.fastag_model import Fastag
-from utils.send_email import send_email
+
+from database.models import Fastag,Transaction
+from helper.send_email import send_email
 import logging
 import json
 import azure.functions as func
+import  datetime
+import pytz
 
 FASTAG_ISSUED_SUBJECT = "Thank you for purchasing a fastag"
 FASTAG_ISSUED_BODY = """
@@ -25,7 +27,6 @@ class FastagService:
         self.fastag_repo = FastagRepo()
 
     def create_fastag(self, fastag: Fastag):
-        # Checking whether fastag already exists or not
         if self.fastag_repo.does_fastag_exists(fastag.id):
             logging.error("Fastag already exists")
             return func.HttpResponse(
@@ -100,7 +101,7 @@ class FastagService:
                 status_code = 404
             )
         fastags = self.fastag_repo.get_fastags(email)
-        if not fastags:  # equivalent to if len(fastags) == 0
+        if not fastags: 
             logging.error("No Fastags found")
             return func.HttpResponse(
                 json.dumps("No Fastags found"),
@@ -121,8 +122,10 @@ class FastagService:
             )
         updated_balance = fastag_details[0]['balance'] + amount
         self.fastag_repo.set_balance(tag_id, updated_balance, fastag_details[0]['vehicleId'])
+        
+        timestamp = str(datetime.datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S"))
 
-        new_transaction = Transaction(tag_id, 'credit', amount, 'online', 'recharge')
+        new_transaction = Transaction(tag_id=tag_id,type='credit', amount=amount, timestamp=timestamp,description="recharge",location="online")
         transaction_repo = TransactionRepo()
         transaction_repo.create_transaction(new_transaction)
 

@@ -1,5 +1,5 @@
-from utils.db_connection import vehicle_container
-from models.vehicle_model import Vehicle
+from database.connection import vehicle_container
+from database.models import Vehicle
 import logging
 
 class VehicleRepo:
@@ -7,7 +7,6 @@ class VehicleRepo:
         pass
 
     def create_vehicle(self, vehicle: Vehicle):
-        # Creating a vehicle
         vehicle_container.create_item({
             "id": vehicle.id,
             "email": vehicle.email,
@@ -46,10 +45,16 @@ class VehicleRepo:
             ],
             enable_cross_partition_query=True
         ))
-        if len(items) == 0:
-            # Vehicle doesn't exists
-            return False
-        else:
-            # Vehicle exists
-            return items
+        return items
+
+    def check_associated_email_with_vehicle(self,vehicle_id, email):
+        query = 'Select * from c where c.id = @vehicleId and c.email=@email'
+        check_vehicle_association = list(vehicle_container.query_items(query=query,
+                                                                       parameters=[
+                                                                           {"name":"@vehicleId","value":vehicle_id},
+                                                                           {"name":"@email","value":email}
+                                                                       ],
+                                                                       enable_cross_partition_query=True))
+        return len(check_vehicle_association)
+
     

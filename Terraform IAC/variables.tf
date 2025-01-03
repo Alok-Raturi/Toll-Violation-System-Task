@@ -110,7 +110,3 @@ variable "python_version" {
 variable "PRIVATE_KEY" {
   type = string
 }
-
-variable "PUBLIC_KEY"{
-  type = string
-}

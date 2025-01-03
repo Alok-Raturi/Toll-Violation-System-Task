@@ -2,45 +2,46 @@
 from jose import JWTError, jwt
 import time
 import os
+import requests
 
-ALGORITHM = "HS256"
-SECRET_KEY = "Alok@123"
+
+ALGORITHM = "RS256"
+
+headers = {
+    "alg": "RS256", 
+    "typ": "JWT",   
+    "kid": "a1b1"
+}
+
+def get_public_key(token:str):
+    header = jwt.get_unverified_headers(token)
+    kid = header['kid']
+    print(header)
+    payload = jwt.get_unverified_claims(token)
+    print(payload)
+    
+    url = payload['url']
+    response = requests.get(url).json()
+    public_key = [item for item in response if item['kid'] == kid]
+    return public_key[0]['public-key']
 
 def encode_token(data:dict):
     try:
         data = data.copy() 
-        data.update({'iat':time.time(),'exp': time.time()+3600})
+        data.update({
+            "iat":time.time(),
+            "exp": time.time()+3600,
+            "url": "https://67725c51ee76b92dd4920815.mockapi.io/well-known/jwks/public-key"
+        })
         private_key = f'''{os.getenv('PRIVATE_KEY')}'''
-        return jwt.encode(data, private_key, algorithm=ALGORITHM)
+        return jwt.encode(data, private_key, algorithm=ALGORITHM,headers=headers)
     except JWTError:
         raise JWTError("Error encoding token")
-    
+
 def decode_token(token:str):
     try:
-        public_key = f'''{os.getenv("PUBLIC_KEY")}'''
+        public_key = f'''{get_public_key(token)}'''
         return jwt.decode(token, public_key, algorithms=[ALGORITHM])
     except JWTError:
         raise JWTError("Error decoding token")
 
-
-# def encode_token(data:dict):
-#     try:
-#         data = data.copy() 
-#         data.update({'iat':time.time(),'exp': time.time()+3600})
-#         # private_key = f'''{os.getenv('PRIVATE_KEY')}'''
-#         return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
-#     except JWTError:
-#         raise JWTError("Error encoding token")
-    
-# # abc = encode_token({"name":"Alok","class":"abc"})
-# # print(abc)
-
-# def decode_token(token:str):
-#     try:
-#         # public_key = f'''{os.getenv("PUBLIC_KEY")}'''
-#         return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#     except JWTError:
-#         raise JWTError("Error decoding token")
-
-
-# print(decode_token("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiQWxvayIsImNsYXNzIjoiYWJjZCIsImlhdCI6MTczNTMwMDUyNi4zMTYzNDM1LCJleHAiOjE3MzUzMDQxMjYuMzE2MzQzNX0.X0OS3BNq3EEa53y07vT8AUFM2fvyo66nsOTInxG5PzU"))

@@ -1,7 +1,7 @@
 import azure.functions as func
 from repositories.transaction_repo import TransactionRepo
 from repositories.fastag_repo import FastagRepo
-from models.transaction_model import Transaction
+from database.models import Transaction
 import json
 import logging
 class TransactionService:
@@ -20,7 +20,7 @@ class TransactionService:
                 status_code = 404
             )
         
-        history = self.transaction_repo.get_transaction_history()
+        history = self.transaction_repo.get_transaction_history(tag_id=tag_id)
         if not history:
             logging.error("No transaction history")
             return func.HttpResponse(
@@ -29,6 +29,6 @@ class TransactionService:
             )
         return func.HttpResponse(
             json.dumps(history),
-            status_code = 404
+            status_code = 200
         )
         

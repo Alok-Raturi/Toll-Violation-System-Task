@@ -2,13 +2,14 @@ from azure.communication.email import EmailClient
 import os
 import logging
 
+# 
 def send_email(email,subject,body):
     try:
-        connection_string = os.getenv("CONNECTION_STRING")
+        connection_string = "endpoint=https://communication-service-for-toll.unitedstates.communication.azure.com/;accesskey=9mWGXvskMFU2kHlSGMyPptDkuhftu3nILPhGYZWLx9fEOCKCRgagJQQJ99ALACULyCptxpY3AAAAAZCS38jF"
         client = EmailClient.from_connection_string(connection_string)
 
         message = {
-            "senderAddress": f"DoNotReply@{os.getenv('SENDER_DOMAIN')}",
+            "senderAddress": f"DoNotReply@64e7b640-b76a-4e00-8695-562d72a87429.azurecomm.net",
             "recipients": {
                 "to": [{"address": f"{email}"}]
             },
@@ -28,9 +29,8 @@ def send_email(email,subject,body):
 
         poller = client.begin_send(message)
         result = poller.result()
-        print("Message sent: ", result.message_id)
         logging.warning("Email sent successfully")
 
     except Exception as e:
-        logging.warning("Can't send email")
+        logging.warning(e)
 

@@ -67,6 +67,9 @@ resource "azurerm_cosmosdb_sql_container" "user_container_table" {
   account_name        = azurerm_cosmosdb_account.toll_database_account.name
   database_name         = azurerm_cosmosdb_sql_database.toll_violation_database_system.name
   partition_key_paths   = ["/email"]
+  unique_key{
+    paths=["/email"]
+  }
 }
 
 resource "azurerm_cosmosdb_sql_container" "vehicle_container_table" {
@@ -158,8 +161,7 @@ resource "azurerm_linux_function_app" "function_app_toll_violation_system"{
     "CONNECTION_STRING": "${azurerm_communication_service.communication_service_for_alerts.primary_connection_string}",
     "SENDER_DOMAIN": "${azurerm_email_communication_service_domain.toll_email_communication_service_domain.from_sender_domain}",
     "SENDER_DOMAIN_MAIL": "${azurerm_email_communication_service_domain.toll_email_communication_service_domain.mail_from_sender_domain}",
-    "PRIVATE_KEY": var.PRIVATE_KEY,
-    "PUBLIC_KEY"= var.PUBLIC_KEY
+    "PRIVATE_KEY": var.PRIVATE_KEY
   }
 
   site_config {
@@ -176,3 +178,7 @@ resource "azurerm_linux_function_app" "function_app_toll_violation_system"{
 
 }
 
+# outputs
+output "function_app_name"{
+  value = azurerm_linux_function_app.function_app_toll_violation_system.name
+}
