@@ -73,7 +73,7 @@ class ChallanRepo:
         
         for challan in unsettled_overdue_challans:
             challan_container.patch_item(
-                item = challan.id,
+                item = challan['id'],
                 patch_operations=operations,
                 partition_key=vehicle_id
             )

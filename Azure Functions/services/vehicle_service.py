@@ -119,8 +119,8 @@ class VehicleService:
                 
                 timestamp = str(datetime.datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S"))
 
-                new_transaction = Transaction(tag_id=tag_id,type='debit', amount=challan['amount'], timestamp=timestamp,description="toll plaza payment",location=toll_location)
-                self.transaction_repo.create_transaction(new_transaction)
+                new_transaction = Transaction(tag_id=tag_id,type='debit', amount=passage_amount, timestamp=timestamp,description="toll plaza payment",location=toll_location)
+                transaction_repo.create_transaction(new_transaction)
 
                 
                 # Update fastag balance
@@ -158,12 +158,10 @@ class VehicleService:
             timestamp = str(datetime.datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S"))
 
             new_transaction = Transaction(tag_id=tag_id,type='debit', amount=total, timestamp=timestamp,description="forced overdue challan payment",location=toll_location)
-            self.transaction_repo.create_transaction(new_transaction)
-
-            timestamp = str(datetime.datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S"))
+            transaction_repo.create_transaction(new_transaction)
 
             new_transaction = Transaction(tag_id=tag_id,type='debit', amount=passage_amount, timestamp=timestamp,description="toll plaza payment",location=toll_location)
-            self.transaction_repo.create_transaction(new_transaction)
+            transaction_repo.create_transaction(new_transaction)
 
             fastag_repo.set_balance(
                 tag_id, 
@@ -182,7 +180,7 @@ class VehicleService:
             timestamp = str(datetime.datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S"))
 
             new_transaction = Transaction(tag_id=tag_id,type='debit', amount=passage_amount, timestamp=timestamp,description="toll plaza payment",location=toll_location)
-            self.transaction_repo.create_transaction(new_transaction)
+            transaction_repo.create_transaction(new_transaction)
 
             fastag_repo.set_balance(
                 tag_id, 

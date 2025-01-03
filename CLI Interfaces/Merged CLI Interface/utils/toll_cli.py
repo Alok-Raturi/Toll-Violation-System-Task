@@ -23,11 +23,13 @@ class TollPlazaPerson:
             "status_code": response.status_code
         }
 
-    def vehicle_entry_at_toll(self, vehicle_id, passage_amount):
+    def vehicle_entry_at_toll(self, vehicle_id, passage_amount, location):
         toll_data = {
-            "passage-amount": passage_amount
+            "vehicleId" : vehicle_id,
+            "passageAmount": passage_amount,
+            "location" : location
         }
-        response = requests.post(f"{self.BASE_URL}toll/scan-vehicle/{vehicle_id}", json = toll_data, headers = {"Authorization": self.token})
+        response = requests.post(f"{self.BASE_URL}toll/scan-vehicle", json = toll_data, headers = {"Authorization": self.token})
         return {
             "body" : response.json(),
             "status_code": response.status_code
