@@ -161,7 +161,7 @@ resource "azurerm_linux_function_app" "function_app_toll_violation_system"{
   app_settings = {
     "COSMOS_DB_ENDPOINT": "${azurerm_cosmosdb_account.toll_database_account.endpoint}",
     "COSMOS_DB_KEY": "${azurerm_cosmosdb_account.toll_database_account.primary_key}",
-    "CONNECTION_STRING": "${azurerm_communication_service.communication_service_for_alerts.primary_connection_string}",
+    # "CONNECTION_STRING": "${azurerm_communication_service.communication_service_for_alerts.primary_connection_string}",
     # "SENDER_DOMAIN": "${azurerm_email_communication_service_domain.toll_email_communication_service_domain.from_sender_domain}",
     # "SENDER_DOMAIN_MAIL": "${azurerm_email_communication_service_domain.toll_email_communication_service_domain.mail_from_sender_domain}",
     "PRIVATE_KEY": var.PRIVATE_KEY,
