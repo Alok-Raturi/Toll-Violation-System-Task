@@ -108,7 +108,7 @@ variable "function_app_application_insights_name"{
 
 variable "function_app_container"{
     description = "The name of the function app container."
-    default = "raturifunctionapp"
+    default = "raturifunctionapp11"
     type = string
 }
 
