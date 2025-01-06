@@ -165,7 +165,8 @@ resource "azurerm_linux_function_app" "function_app_toll_violation_system"{
     "SENDER_DOMAIN": "${azurerm_email_communication_service_domain.toll_email_communication_service_domain.from_sender_domain}",
     "SENDER_DOMAIN_MAIL": "${azurerm_email_communication_service_domain.toll_email_communication_service_domain.mail_from_sender_domain}",
     "PRIVATE_KEY": var.PRIVATE_KEY,
-    "WEBSITE_RUN_FROM_PACKAGE": var.blob_url
+    "WEBSITE_RUN_FROM_PACKAGE": var.blob_url,
+    "SCM_DO_BUILD_DURING_DEPLOYMENT": true
   }
 
   site_config {
