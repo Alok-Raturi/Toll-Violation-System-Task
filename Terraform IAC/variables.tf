@@ -90,7 +90,7 @@ variable "data_location_for_communication_service" {
 # Function App Variables
 variable "function_app_log_storage_name"{
     description = "The name of the storage account for function app logs."
-    default     = "raturi012953storage"
+    default     = "raturistorageac986"
     type = string
 }
 
