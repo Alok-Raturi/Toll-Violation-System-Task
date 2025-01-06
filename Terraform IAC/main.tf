@@ -111,7 +111,7 @@ resource "azurerm_communication_service" "communication_service_for_alerts" {
 }
 
 resource "azurerm_email_communication_service" "toll_email_communication_service" {
-  name                = "Toll-Email-Communication-Service"
+  name                = "Toll-Email-Communication-Service-1"
   resource_group_name = azurerm_resource_group.communication_service_resource_group.name
   data_location       = var.data_location_for_communication_service
 }
