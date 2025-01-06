@@ -64,13 +64,13 @@ variable "cosmosdb_container_name" {
 # Communication Service Variable
 variable "communication_service_name" {
   description = "The name of the communication service."
-  default     = "Communication-Service-For-Toll"
+  default     = "Communication-Service-For-Toll-091"
   type = string
 }
 
 variable "email_communication_service_name" {
   description = "The name of the email communication service."
-  default     = "Toll-Communication-Service"
+  default     = "Toll-Communication-Service-091"
   type = string
 }
 
