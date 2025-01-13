@@ -11,6 +11,7 @@ pipeline {
         stage('app deployment'){
             steps {
                 script {
+                    sh "cd 'Azure Functions'"
                     sh "func azure functionapp publish ${params.FUNCTION_NAME}"
                 }
             }
