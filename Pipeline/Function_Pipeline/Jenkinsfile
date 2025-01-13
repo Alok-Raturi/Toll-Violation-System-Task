@@ -12,7 +12,8 @@ pipeline {
             steps {
                 script {
                     sh "cd 'Azure Functions'"
-                    sh "func azure functionapp publish ${params.FUNCTION_NAME}"
+                    sh "func init --worker-runtime python"
+                    sh "func azure functionapp publish ${params.FUNCTION_NAME} --worker-runtime python"
                 }
             }
         }
