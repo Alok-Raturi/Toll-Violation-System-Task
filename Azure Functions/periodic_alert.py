@@ -17,7 +17,7 @@ PROD_CRON_JOB = "00 00 4 15 * *"
 TEST_CRON_JOB = "00 25 12 22 * *"
 
 
-@periodic_alert.timer_trigger(schedule="", arg_name="myTimer", run_on_startup=False,
+@periodic_alert.timer_trigger(schedule=PROD_CRON_JOB, arg_name="myTimer", run_on_startup=False,
               use_monitor=False) 
 def periodic_due_challan_alert(myTimer: func.TimerRequest) -> None:
     if myTimer.past_due:
