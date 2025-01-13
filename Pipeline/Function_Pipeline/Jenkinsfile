@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+    tools {
+        terraform 'Terraform-Jenkins'
+    }
+
+    parameters {
+        string(name: 'FUNCTION_NAME', defaultValue: 'Madhur-Test-Demo', description: 'Function App Name to deploy')
+    }
+    stages {
+        stage('dependencies installation') {
+            steps {
+                script {
+                    echo 'Azure App Deployment Phase'
+                    sh "curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg"
+                    sh "sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg"
+                    sh """sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-$(lsb_release -cs 2>/dev/null)-prod $(lsb_release -cs 2>/dev/null) main" > /etc/apt/sources.list.d/dotnetdev.list'"""
+                    sh "sudo apt-get update"
+                    sh "sudo apt-get install azure-functions-core-tools-4"
+                }
+            }
+        }
+        stage('app deployment'){
+            steps {
+                script {
+                    sh "func azure functionapp publish ${params.FUNCTION_NAME}"
+                }
+            }
+        }
+        stage('cleanup') {
+            steps {
+                cleanWs()
+            }
+        }
+    }
+post {
+        always {
+            echo 'Deployment finished.'
+        }
+    }
+}
