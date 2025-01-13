@@ -104,23 +104,23 @@ resource "azurerm_cosmosdb_sql_container" "transaction_container_table" {
 
 
 # # Communication Service
-# resource "azurerm_communication_service" "communication_service_for_alerts" {
-#   name                = var.communication_service_name
-#   resource_group_name = azurerm_resource_group.communication_service_resource_group.name
-#   data_location       = var.data_location_for_communication_service
-# }
+resource "azurerm_communication_service" "communication_service_for_alerts" {
+  name                = var.communication_service_name
+  resource_group_name = azurerm_resource_group.communication_service_resource_group.name
+  data_location       = var.data_location_for_communication_service
+}
 
-# resource "azurerm_email_communication_service" "toll_email_communication_service" {
-#   name                = "Toll-Email-Communication-Service"
-#   resource_group_name = azurerm_resource_group.communication_service_resource_group.name
-#   data_location       = var.data_location_for_communication_service
-# }
+resource "azurerm_email_communication_service" "toll_email_communication_service" {
+  name                = "Toll-Email-Communication-Service"
+  resource_group_name = azurerm_resource_group.communication_service_resource_group.name
+  data_location       = var.data_location_for_communication_service
+}
 
-# resource "azurerm_email_communication_service_domain" "toll_email_communication_service_domain" {
-#   name             = var.email_communication_service_domain_name
-#   email_service_id = azurerm_email_communication_service.toll_email_communication_service.id
-#   domain_management = "AzureManaged"
-# }
+resource "azurerm_email_communication_service_domain" "toll_email_communication_service_domain" {
+  name             = var.email_communication_service_domain_name
+  email_service_id = azurerm_email_communication_service.toll_email_communication_service.id
+  domain_management = "AzureManaged"
+}
 
 # Function App and Azure functions + a storage account for logs
 resource "azurerm_storage_account" "function_app_storage_account" {
@@ -161,9 +161,9 @@ resource "azurerm_linux_function_app" "function_app_toll_violation_system"{
   app_settings = {
     "COSMOS_DB_ENDPOINT": "${azurerm_cosmosdb_account.toll_database_account.endpoint}",
     "COSMOS_DB_KEY": "${azurerm_cosmosdb_account.toll_database_account.primary_key}",
-    # "CONNECTION_STRING": "${azurerm_communication_service.communication_service_for_alerts.primary_connection_string}",
-    # "SENDER_DOMAIN": "${azurerm_email_communication_service_domain.toll_email_communication_service_domain.from_sender_domain}",
-    # "SENDER_DOMAIN_MAIL": "${azurerm_email_communication_service_domain.toll_email_communication_service_domain.mail_from_sender_domain}",
+    "CONNECTION_STRING": "${azurerm_communication_service.communication_service_for_alerts.primary_connection_string}",
+    "SENDER_DOMAIN": "${azurerm_email_communication_service_domain.toll_email_communication_service_domain.from_sender_domain}",
+    "SENDER_DOMAIN_MAIL": "${azurerm_email_communication_service_domain.toll_email_communication_service_domain.mail_from_sender_domain}",
     "PRIVATE_KEY": var.PRIVATE_KEY,
     "WEBSITE_RUN_FROM_PACKAGE": var.blob_url,
     "SCM_DO_BUILD_DURING_DEPLOYMENT": true
